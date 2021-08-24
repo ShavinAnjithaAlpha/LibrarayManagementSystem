@@ -1,0 +1,42 @@
+{
+    "p2qf2": {
+        "title": "Physics",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "fqcl3": {
+        "title": "Chemistry",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "nfhw6": {
+        "title": "Mathematics",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "rprzc": {
+        "title": "Languages",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "8j66j": {
+        "title": "Strory Books",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "1ifm2": {
+        "title": "Fairy Books",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "duww4": {
+        "title": "ElectroMagnetics",
+        "description": "about the electric and magnetic fileds theory and it's practicles.",
+        "image_dir": "images/sys_images\\download.png"
+    },
+    "usllw": {
+        "title": "Fluid Mechnism",
+        "description": "about the fluid physics theory , articles and it's practicles.",
+        "image_dir": "images/sys_images\\sadamoled-wallpapers-40.jpg"
+    }
+}
