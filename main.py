@@ -25,6 +25,10 @@ class Stage:
         self.books = list()
         self.collections = list()
 
+        # create the path history stack
+        self.pathHistory = list()
+        self.currentIndex = None
+
         # set the selected widget
         self.selected_widget = None
 
@@ -48,6 +52,43 @@ class Stage:
         self.collections.clear()
 
         self.selected_widget = None
+
+    def addPath(self, path : str):
+        if len(self.pathHistory) != 0:
+            if self.pathHistory[-1] != path:
+                self.pathHistory.append(path)
+                self.currentIndex = len(self.pathHistory) - 1
+        else:
+            self.pathHistory.append(path)
+            self.currentIndex = 0
+
+    def goBackward(self) -> str:
+        # remove the lat item in the history
+        if self.currentIndex > 0:
+            self.currentIndex -= 1
+        return self.pathHistory[self.currentIndex]
+
+    def goForward(self) -> str:
+
+        if self.currentIndex < len(self.pathHistory) - 1:
+            self.currentIndex += 1
+        return self.pathHistory[self.currentIndex]
+
+    def canBackward(self):
+
+        if self.currentIndex:
+            if self.currentIndex > 0:
+                return True
+        return False
+
+    def canForward(self):
+        if self.currentIndex:
+            if self.currentIndex < len(self.pathHistory) - 1:
+                return True
+        return False
+
+    def clearHistory(self):
+        self.pathHistory.clear()
 
 
 class LibraryMangementSystem(QMainWindow):
@@ -218,9 +259,9 @@ class LibraryMangementSystem(QMainWindow):
         # create the grid layout for pack the searchBar
 
         grid_lyt = QGridLayout()
-        grid_lyt.setSpacing(0)
+        grid_lyt.setSpacing(10)
 
-        grid_lyt.addWidget(self.searchBar, 1, 1, 1, 4)
+        grid_lyt.addWidget(self.searchBar, 1, 2, 1, 3)
 
         # create the group box for pack the radio buttons
         group_box = QGroupBox()
@@ -262,6 +303,25 @@ class LibraryMangementSystem(QMainWindow):
         refreshButton.pressed.connect(self.refreshPage)
         grid_lyt.addWidget(refreshButton, 0, 4)
 
+        # backward button
+        self.backwardButton =  QPushButton("<-")
+        self.backwardButton.setObjectName("backwardButton")
+        self.backwardButton.setEnabled(False)
+        self.backwardButton.pressed.connect(self.goBack)
+
+        self.forwardButton = QPushButton("->")
+        self.forwardButton.setObjectName("forwardButton")
+        self.forwardButton.setEnabled(False)
+        self.forwardButton.pressed.connect(self.goForward)
+
+        # create the small h box
+        buttonHBox = QHBoxLayout()
+        buttonHBox.addWidget(self.backwardButton)
+        buttonHBox.addWidget(self.forwardButton)
+        # add to the grid
+        grid_lyt.addLayout(buttonHBox, 1, 1, 1, 1)
+
+
         # set the toolBar widget ;layout as the grid_lyt
         self.toolBarWidget.setLayout(grid_lyt)
 
@@ -292,6 +352,8 @@ class LibraryMangementSystem(QMainWindow):
         # set the important fileds for system
         self.currentPath = "/"
         self.currentStage = Stage()
+        # add the current path to the history
+        self.currentStage.addPath(self.currentPath)
 
         # render the root page
         self.renderNewPageForCollection(self.currentPath)
@@ -411,17 +473,20 @@ class LibraryMangementSystem(QMainWindow):
             collection_widget = listCollectionWidget(title, des, img, path)
         else:
             collection_widget = boxCollectionWidget(title, des, img, path)
+
+        info_data = {"title": title,
+                     "description": des,
+                     "path": path,
+                     "image_dir": img,
+                     "date": current_date,
+                     "time": current_time}
+        self.currentStage.addCollection(collection_widget, info_data)
+
         # set the event handler
         collection_widget.mouseDoubleClickEvent = (lambda a, e = collection_widget.path : self.openNewPage(e))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
 
-        info_data = {"title" : title,
-                     "description" : des,
-                     "path" : path,
-                     "image_dir" : img,
-                     "date" : current_date,
-                     "time" : current_time}
-        self.currentStage.addCollection(collection_widget, info_data)
+
 
         # add to the layout
         if self.getTheme() == "list":
@@ -441,9 +506,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # clear the stage
         self.currentStage.clear()
+        # add the new path to the stage history
+        self.currentStage.addPath(self.currentPath)
 
         # render the new page
         self.renderNewPageForCollection(self.currentPath)
+        # set the back and forward settings
+        self.setBackForwardState()
 
     def refreshPage(self):
 
@@ -462,6 +531,48 @@ class LibraryMangementSystem(QMainWindow):
 
         # render the page again
         self.renderNewPageForCollection(self.currentPath)
+
+    def goBack(self):
+
+        # clear the widgets and stage
+        for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+            widget.deleteLater()
+        self.currentStage.clear()
+
+        # set the new path
+        self.currentPath = self.currentStage.goBackward()
+        # reload the page
+        self.renderNewPageForCollection(self.currentPath)
+
+        # set the backward button options
+        self.setBackForwardState()
+
+    def goForward(self):
+
+        # clear the widgets and stage
+        for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
+            widget.deleteLater()
+        self.currentStage.clear()
+
+        # set the new path
+        self.currentPath = self.currentStage.goForward()
+        # reload the page
+        self.renderNewPageForCollection(self.currentPath)
+
+        # set the backward button options
+        self.setBackForwardState()
+
+    def setBackForwardState(self):
+
+        if self.currentStage.canBackward():
+            self.backwardButton.setEnabled(True)
+        else:
+            self.backwardButton.setEnabled(False)
+
+        if self.currentStage.canForward():
+            self.forwardButton.setEnabled(True)
+        else:
+            self.forwardButton.setEnabled(False)
 
     def renderNewPageForCollection(self, path : str):
 
@@ -510,7 +621,7 @@ class LibraryMangementSystem(QMainWindow):
                 self.stageLayout.addWidget(widget, (count) // 4, (count) % 4)
 
             widget.mouseDoubleClickEvent = (lambda a, e = widget.path : self.openNewPage(e))
-
+            widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
             # add the widget to stage
             self.currentStage.addCollection(widget, data)
 
