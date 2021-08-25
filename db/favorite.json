@@ -10,5 +10,17 @@
         "id": "fqcl3",
         "title": "Chemistry",
         "path": "/1/"
+    },
+    {
+        "type": "collection",
+        "id": "cl1xs",
+        "title": "S Block",
+        "path": "/1/1/"
+    },
+    {
+        "type": "collection",
+        "id": "duww4",
+        "title": "ElectroMagnetics",
+        "path": "/0/0/"
     }
 ]

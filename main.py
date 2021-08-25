@@ -7,7 +7,7 @@ from style_sheet import dark_style_sheet
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar, QListView)
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
-from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel
+from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel, listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette
 # Press Shift+F10 to execute it or replace it with your code.
@@ -565,7 +565,58 @@ class LibraryMangementSystem(QMainWindow):
             # open the file dialog
             files , ok = QFileDialog.getOpenFileNames(self, "Choose Books", "", "PDF Files(*.pdf)")
             if ok:
-                pass
+                self.addNewBooks(files)
+
+    def addNewBooks(self, files : list):
+
+        # calculate the time and date
+        date = QDate.currentDate().toString("dd:MM:yyyy")
+        time = QTime.currentTime().toString("hh:mm:ss A")
+
+        # create the connection and open the cursor
+        connection = sqlite3.connect(self.db_file)
+        cursor = connection.cursor()
+
+        # get the book json file data
+        books_data = {}
+        with open("db/book.json", "r") as file:
+            books_data = json.load(file)
+
+        path = self.currentPath
+        for file in files:
+            # generate the new book id code
+            book_id = self.generateID("book")
+
+
+            cursor.execute(f""" INSERT INTO book_table(book_id , path, date ,time, pw) VALUES ('{book_id}', '{path}', '{date}', '{time}', '') """)
+            books_data[book_id] = {"dir" : file}
+            # create the book widget based on the theme
+
+            if self.getTheme() == "list":
+                # create the list book widget
+                widget = listBookWidget(os.path.split(file)[1], book_id, path)
+                # add to the layout
+                self.stageLayout.insertWidget(0, widget)
+            else:
+                widget = boxBookWidget(os.path.split(file)[1], book_id, path)
+                count = self.currentStage.WidgetCount()
+                self.stageLayout.addWidget(widget, count//4, count%4)
+            print("2")
+            # update the stage
+            self.currentStage.addBook(widget, {"title" : os.path.split(file),
+                                               "path" : path,
+                                               "dir" : file,
+                                               "book_id" : book_id})
+
+
+
+        # save the changes and close the connection
+        connection.commit()
+        connection.close()
+
+        with open("db/book.json", "w") as file:
+            json.dump(books_data, file, indent=4)
+
 
     def addNewCollection(self, data : dict):
 
@@ -573,11 +624,11 @@ class LibraryMangementSystem(QMainWindow):
         des = data["description"]
         img = data["image_dir"]
         # get the current time and date
-        current_time = QTime.currentTime().toString("hh:mm:ss AA")
+        current_time = QTime.currentTime().toString("hh:mm:ss A")
         current_date = QDate.currentDate().toString("dd:MM:yyyy")
 
         # generate the id
-        id_code = self.generateCollectionID()
+        id_code = self.generateID("collection")
         path = f"{self.currentPath}{self.generatePath(self.currentPath)}/"
 
         # create the connection and open the cursor
@@ -646,6 +697,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # render the new page
         self.renderNewPageForCollection(self.currentPath)
+        self.renderNewPageForBook(self.currentPath)
         # set the back and forward settings
         self.setBackForwardState()
 
@@ -742,6 +794,51 @@ class LibraryMangementSystem(QMainWindow):
 
         self.addCollectionWidgets(filter_data)
 
+    def renderNewPageForBook(self, path : str):
+
+        # get the need books data
+        books_data = self.getNeedBooks(path)
+
+        # modified the data used the json file data
+        json_data = {}
+        with open("db/book.json", "r") as file:
+            json_data = json.load(file)
+        # filter the code data
+        id_data = [item[1] for item in books_data]
+
+        filter_json_data = []
+        for item in json_data.keys():
+            if item in id_data:
+                filter_json_data.append([item, json_data[item]["dir"]])
+
+        # merge the lists
+        originalData = []
+        for i in range(len(books_data)):
+            # create the new dictionary for this
+            new_dict = {"title" : os.path.split(filter_json_data[i][1])[1],
+                        "path" : books_data[i][2],
+                        "dir" : filter_json_data[i][1],
+                        "id" : books_data[1]}
+            originalData.append(new_dict)
+
+        # create the new book used the original Data list
+        self.addNewBookWidgets(originalData)
+
+    def addNewBookWidgets(self, filterData : list):
+
+        for data in filterData:
+            # create the widget base on the theme
+            if self.getTheme() == "list":
+                widget = listBookWidget(data["title"], data["id"], data["path"])
+                self.stageLayout.insertWidget(0, widget)
+            else:
+                widget = boxBookWidget(data["title"], data["id"], data["path"])
+                count = self.currentStage.WidgetCount()
+                self.stageLayout.addWidget(widget, count//4, count%4)
+            # update the stage area
+            self.currentStage.addBook(widget, data)
+
+
     def addCollectionWidgets(self, FilterData : list):
 
 
@@ -800,6 +897,19 @@ class LibraryMangementSystem(QMainWindow):
         # return the filtering oaths
         return newData
 
+    def getNeedBooks(self, rootPath):
+
+        # create the connection
+        connection = sqlite3.connect(self.db_file)
+        cursor = connection.cursor()
+
+        cursor.execute(f""" SELECT * FROM book_table WHERE path='{rootPath}' """)
+        data = cursor.fetchall()
+
+        # close the connection and return the data
+        connection.close()
+        return data
+
     def generatePath(self, path : str):
 
         # create the connection
@@ -827,15 +937,19 @@ class LibraryMangementSystem(QMainWindow):
         else:
             return max(newData) + 1
 
-    def generateCollectionID(self):
+    def generateID(self, type : str):
 
         # generate the 5 digits code for collection
         # first create the connection and get the current ids
         connection = sqlite3.connect(self.db_file)
         cursor = connection.cursor()
 
-        cursor.execute("SELECT collection_id FROM collection_table")
-        data = cursor.fetchall()
+        if type == "collection":
+            cursor.execute("SELECT collection_id FROM collection_table")
+            data = cursor.fetchall()
+        else:
+            cursor.execute("SELECT book_id FROM book_table")
+            data = cursor.fetchall()
 
         data = [item[0] for item in data]
         # generate the new code

@@ -141,5 +141,31 @@ dark_style_sheet_for_Collection = """
                                                                         max-height : 20px;
                                                                         border : 1px solid white;
                                                                         border-radius : 10px;}
+                                                                        
+                                    QWidget#bookBaseWidget {background-color : rgb(0, 0, 10);
+                                                            border : 1px solid rgb(240, 60, 6);
+                                                            border-radius : 10px;
+                                                            color : white}
+                                                            
+                                    QLabel#bookTitleLabel {background : none;
+                                                            font-size : 15px;
+                                                            font-family : verdana;
+                                                            color : rgb(200, 0, 150)}
+                                                            
+                                    QPushButton#bookFavoriteButton:!checked {background : none;
+                                                                        min-width : 20px;
+                                                                        min-height : 20px;
+                                                                        max-width : 20px;
+                                                                        max-height : 20px;
+                                                                        border : 1px solid white;
+                                                                        border-radius : 10px;}
+                                                                        
+                                    QPushButton#bookFavoriteButton:checked {background : white;
+                                                                        min-width : 20px;
+                                                                        min-height : 20px;
+                                                                        max-width : 20px;
+                                                                        max-height : 20px;
+                                                                        border : 1px solid white;
+                                                                        border-radius : 10px;}
                                     
                                     """

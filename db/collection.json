@@ -118,5 +118,20 @@
         "title": "Artthur C. Clerk Book Series",
         "description": "",
         "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "kl4fm": {
+        "title": "Mxwell Equations",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "q2xu1": {
+        "title": "TV Signal Processings",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "94jsz": {
+        "title": "Bluetooth Processing",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
     }
 }

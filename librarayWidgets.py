@@ -2,9 +2,98 @@ import json
 import sqlite3
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection
-from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView)
+from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QAbstractListModel, QModelIndex, QAbstractItemModel
 from PyQt5.QtGui import QFont, QColor, QPixmap, QImage
+
+
+# create the book widget
+class bookWidget(QWidget):
+
+    default_cover_imageDir = "images/sys_images/book.png"
+
+    def __init__(self, title, book_id, path):
+        super(bookWidget, self).__init__()
+        # declare the instance variables
+        self.title = title
+        self.book_id = book_id
+        self.path = path
+
+        self.setStyleSheet(dark_style_sheet_for_Collection)
+
+        # create the base widget
+        self.baseWidget = QWidget()
+        self.baseWidget.setObjectName("bookBaseWidget")
+
+        # create the title label
+        self.titleLabel = QLabel(self.title)
+        self.titleLabel.setObjectName("bookTitleLabel")
+        self.titleLabel.setWordWrap(True)
+
+        # create the cover image label
+        self.coverImageLabel = QLabel()
+        self.coverImageLabel.setObjectName("bookImageLabel")
+
+        # create the form layout for book other important data
+        self.formLyt = QFormLayout()
+        self.formLyt.setFormAlignment(Qt.AlignLeft)
+        self.formLyt.setLabelAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        # create the favorite button for this
+        self.addFavoriteButton = QPushButton()
+        self.addFavoriteButton.setObjectName("bookFavoriteButton")
+        # self.addFavoriteButton.clicked.connect(self.changeFavoriteState)
+        self.addFavoriteButton.setCheckable(True)
+
+
+        # create the vbox for pack the base widget
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.baseWidget)
+        self.setLayout(vbox)
+
+
+class boxBookWidget(bookWidget):
+    def __init__(self, title, book_id, path):
+        super(boxBookWidget, self).__init__(title, book_id, path)
+
+        # set the widget size settings
+        self.setMaximumSize(QSize(450, 400))
+
+        self.coverImageLabel.setFixedSize(QSize(250, 300))
+        # set the pix map
+        self.coverImageLabel.setPixmap(
+            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
+                                                        Qt.FastTransformation))
+        # create the grid
+        gridLyt = QGridLayout()
+        gridLyt.addWidget(self.titleLabel, 0, 1, 1, 1)
+        gridLyt.addWidget(self.coverImageLabel, 0, 0, 2, 1)
+        gridLyt.addLayout(self.formLyt, 1, 1)
+        gridLyt.addWidget(self.addFavoriteButton, 0, 2)
+
+        self.baseWidget.setLayout(gridLyt)
+
+class listBookWidget(bookWidget):
+    def __init__(self, title, book_id, path):
+        super(listBookWidget, self).__init__(title, book_id, path)
+
+        # set the widget size settings
+        self.setMaximumHeight(200)
+
+        self.coverImageLabel.setFixedSize(QSize(150, 150))
+        # set the pix map
+        self.coverImageLabel.setPixmap(
+            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
+                                                        Qt.FastTransformation))
+        # create the grid
+        gridLyt = QGridLayout()
+        gridLyt.addWidget(self.titleLabel, 0, 0, 1, 2)
+        gridLyt.addWidget(self.coverImageLabel, 1, 0)
+        gridLyt.addLayout(self.formLyt, 1, 1)
+        gridLyt.addWidget(self.addFavoriteButton, 0, 2)
+
+        self.baseWidget.setLayout(gridLyt)
+
 
 # create the collection widget
 class collectionWidget(QWidget):
@@ -291,18 +380,8 @@ class favoriteListModel(QAbstractListModel):
 
 if __name__ == "__main__":
     app = QApplication([])
-    window = listCollectionWidget("Science", "this is the science section for get the some knowledges.....", "images/sys_images/coll_img1.jpg", "0/1/2")
+    window = listBookWidget("pdf", "455sdsd", "1/2/5")
     window.show()
-
-    # create the list view
-    model = favoriteListModel(todos=[{"title" : "len", "type" : "collection"}])
-    model.layoutChanged.emit()
-    listview = QListView()
-    print(model.todos)
-    listview.setModel(model)
-
-
-    listview.show()
 
     app.exec_()
 
