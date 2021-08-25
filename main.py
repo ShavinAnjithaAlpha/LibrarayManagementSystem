@@ -5,9 +5,9 @@ import sys, random
 from style_sheet import dark_style_sheet
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
-                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar)
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate
-from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget
+                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar, QListView)
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve
+from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette
 # Press Shift+F10 to execute it or replace it with your code.
@@ -115,6 +115,10 @@ class LibraryMangementSystem(QMainWindow):
         if not os.path.exists("db/book.json"):
             with open("db/book.json", "w") as file:
                 json.dump({}, file, indent=4)
+
+        if not os.path.exists("db/favorite.json"):
+            with open("db/favorite.json", "w") as file:
+                json.dump([], file, indent=4)
 
 
 
@@ -229,6 +233,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # configure the above widget then
         self.setUpTitleBarWidget()
+        self.setUpBarWidget()
         self.setUpToolBarWidget()
         self.setUpStageWidget()
         self.setUpRemiderWidget()
@@ -246,6 +251,62 @@ class LibraryMangementSystem(QMainWindow):
         hbox.addWidget(title_label)
 
         self.titleBaridget.setLayout(hbox)
+
+    def setUpBarWidget(self):
+
+        # create the two main widgets for favorites and quick access
+        self.favoriteWidget = QWidget()
+
+
+        # recent access
+        self.recentaccessWidget = QWidget()
+
+
+        # create the vbox for pack the widgets
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.favoriteWidget)
+        vbox.addWidget(self.recentaccessWidget)
+        vbox.addStretch()
+
+        self.barWidget.setLayout(vbox)
+
+        self.setUpFavoriteBar()
+        self.setUpRecentAccessBar()
+
+    def setUpFavoriteBar(self):
+
+        # create the title label
+        titleLabel = QLabel("Favorites")
+        titleLabel.setObjectName("favoriteTitleLabel")
+
+        # create the favorite lis view model
+        self.favoriteModel = favoriteListModel()
+
+        # create the list view
+        favoriteListWidget = QListView()
+        favoriteListWidget.setMinimumHeight(350)
+        favoriteListWidget.setModel(self.favoriteModel)
+
+        # create the vbox for favorite bar
+        vbox = QVBoxLayout()
+        vbox.addWidget(titleLabel)
+        vbox.addWidget(favoriteListWidget)
+        vbox.addStretch()
+
+        self.favoriteWidget.setLayout(vbox)
+
+    def setUpRecentAccessBar(self):
+
+        # create the title label
+        titleLabel = QLabel("Recent Access")
+        titleLabel.setObjectName("recentTitleLabel")
+
+        # create the vbox for favorite bar
+        vbox = QVBoxLayout()
+        vbox.addWidget(titleLabel)
+        vbox.addStretch()
+
+        self.recentaccessWidget.setLayout(vbox)
 
     def setUpToolBarWidget(self):
 
@@ -375,12 +436,55 @@ class LibraryMangementSystem(QMainWindow):
         self.reminderTab.addTab(self.statusWidget, "Status")
         self.reminderTab.addTab(self.reminderNoteWidget, "Reminders")
 
+        # create the hide and show button
+        self.hideButton = QPushButton(">")
+        self.hideButton.setObjectName("hideButton")
+        self.hideButton.pressed.connect(self.hideStatusPanel)
+
+        self.showButton = QPushButton("<")
+        self.showButton.setObjectName("showButton")
+        self.showButton.hide()
+        self.showButton.pressed.connect(self.showStatusPanel)
+
+        # create the hbox for buttons
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.hideButton)
+        hbox.addWidget(self.showButton)
+        hbox.addStretch()
+
         # create the vbox for tab
         vbox = QVBoxLayout()
+        vbox.addLayout(hbox)
         vbox.addWidget(self.reminderTab)
+        vbox.addStretch()
         self.reminderWidget.setLayout(vbox)
 
         self.setUpStatusWidget()
+
+    def hideStatusPanel(self):
+
+        # create the animation to hide the panel
+        self.hideAnimation = QPropertyAnimation(self.reminderWidget, b"fixedWidth")
+        self.hideAnimation.setStartValue(self.reminderWidget.width())
+        self.hideAnimation.setEndValue(int(self.width * 0.1))
+        self.hideAnimation.setDuration(1000)
+        self.hideAnimation.start()
+
+        self.showButton.show()
+        self.hideButton.hide()
+
+    def showStatusPanel(self):
+
+        # create the animation to hide the panel
+        self.showAnimation = QPropertyAnimation(self.reminderWidget, b"fixedWidth")
+        self.showAnimation.setStartValue(self.reminderWidget.width())
+        self.showAnimation.setEndValue(int(self.width * 0.15))
+        self.showAnimation.setDuration(1000)
+        self.showAnimation.start()
+
+        self.showButton.hide()
+        self.hideButton.show()
+
 
     def setUpStatusWidget(self):
 
@@ -490,7 +594,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # add to the layout
         if self.getTheme() == "list":
-            self.stageLayout.addWidget(collection_widget)
+            self.stageLayout.insertWidget(0, collection_widget)
         else:
             # get the length of widgets
             count = self.currentStage.WidgetCount() - 1
@@ -624,13 +728,16 @@ class LibraryMangementSystem(QMainWindow):
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
             # add the widget to stage
             self.currentStage.addCollection(widget, data)
+        if isinstance(self.stageLayout, QVBoxLayout):
+            self.stageLayout.addStretch()
 
-    def setSelectionWidget(self, widget : collectionWidget):
+    def setSelectionWidget(self, widget):
 
         # set thr stage selected widget as the this
-        self.currentStage.selected_widget = collectionWidget
-        # update the status
-        self.setStatus()
+        if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
+            self.currentStage.selected_widget = collectionWidget
+            # update the status
+            self.setStatus()
 
     def setStatus(self):
 

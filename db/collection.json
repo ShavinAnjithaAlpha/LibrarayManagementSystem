@@ -108,5 +108,15 @@
         "title": "Waves",
         "description": "",
         "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "136rn": {
+        "title": "Sherlok Holmes",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
+    },
+    "l3bix": {
+        "title": "Artthur C. Clerk Book Series",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.jpg"
     }
 }

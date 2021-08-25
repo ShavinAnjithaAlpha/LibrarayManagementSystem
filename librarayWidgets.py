@@ -1,7 +1,10 @@
+import json
+import sqlite3
+
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection
-from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QLineEdit)
-from PyQt5.Qt import Qt, QFont, QSize, pyqtSignal, QObject
-from PyQt5.QtGui import QColor, QPixmap
+from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView)
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QAbstractListModel, QModelIndex, QAbstractItemModel
+from PyQt5.QtGui import QFont, QColor, QPixmap, QImage
 
 # create the collection widget
 class collectionWidget(QWidget):
@@ -44,6 +47,59 @@ class collectionWidget(QWidget):
         self.imageLabel.setPixmap(
             QPixmap(self.image_dir).scaled(self.imageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
 
+        # create the favorite button
+        self.addFavoriteButton = QPushButton()
+        self.addFavoriteButton.setObjectName("favoriteButton")
+        self.addFavoriteButton.clicked.connect(self.changeFavoriteState)
+        self.addFavoriteButton.setCheckable(True)
+        self.setState()
+
+    def setState(self):
+
+        # open th json file
+        user_data = []
+        with open("db/favorite.json", "r") as file:
+            user_data =json.load(file)
+
+        for item in user_data:
+            if item["path"]  == self.path:
+                self.addFavoriteButton.setChecked(True)
+                return None
+        self.addFavoriteButton.setChecked(False)
+
+    def changeFavoriteState(self, state):
+
+        # get the id for this
+        connection = sqlite3.connect("db/data.db")
+        cursor = connection.cursor()
+
+        cursor.execute(f""" SELECT collection_id FROM collection_table WHERE path = '{self.path}' """)
+        data = cursor.fetchall()
+
+        id = data[0][0]
+        connection.close()
+
+        if state:
+            # add to the favorite
+            # open the json file
+            user_data = []
+            with open("db/favorite.json", "r") as file:
+                user_data = json.load(file)
+
+
+            user_data.append({
+                "type" : "collection",
+                "id" : id,
+                "title" : self.title,
+                "path" : self.path,
+            })
+
+            with open("db/favorite.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+
+        else:
+            # remove the item from the favorites
+            pass
 
 class boxCollectionWidget(collectionWidget):
     def __init__(self, title, description, image_dir, path):
@@ -61,6 +117,7 @@ class boxCollectionWidget(collectionWidget):
         self.gridLyt.addWidget(self.titleLabel, 0, 0, 1, 2)
         self.gridLyt.addWidget(self.imageLabel, 1, 0, 1, 1)
         self.gridLyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
+        self.gridLyt.addWidget(self.addFavoriteButton, 0, 2)
 
         self.baseWidget.setLayout(self.gridLyt)
 
@@ -82,6 +139,8 @@ class listCollectionWidget(collectionWidget):
         self.grid_lyt.addWidget(self.titleLabel, 0, 1, 1, 1)
         self.grid_lyt.addWidget(self.imageLabel, 0, 0, 2, 1)
         self.grid_lyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
+        self.grid_lyt.addWidget(self.addFavoriteButton, 0, 2)
+
 
         self.baseWidget.setLayout(self.grid_lyt)
 
@@ -146,9 +205,63 @@ class switchButton(QWidget):
         else:
             return self.keys.get(self.buttonRight.text())
 
+
+class favoriteListModel(QAbstractListModel):
+
+    json_file = "db/favorite.json"
+    collectionImage = QImage("images/sys_images/collectionSmall.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
+
+    def __init__(self, *args, todos = None,  **kwargs):
+        super(favoriteListModel, self).__init__(*args, **kwargs)
+        self.todos = [] or todos
+        self.fillList()
+
+    def fillList(self):
+
+        try:
+            # connect to the json file
+            with open(self.json_file, "r") as file:
+                user_data = json.load(file)
+
+            # set the data as the todolist
+            self.todos = user_data
+            self.layoutChanged.emit()
+
+        except:
+            raise FileNotFoundError("Cannot find the Favorites Data File...")
+
+    def data(self, index, role):
+
+        if role == Qt.DisplayRole:
+            # get the index data
+
+            collection_data = self.todos[index.row()]
+            # return the collection name
+            return collection_data["title"]
+        elif role == Qt.DecorationRole:
+            collection_data = self.todos[index.row()]
+            # get the type of the data
+            widgetType = collection_data["type"]
+            if widgetType == "collection":
+                return self.collectionImage
+
+    def rowCount(self, index):
+        return len(self.todos)
+
 if __name__ == "__main__":
     app = QApplication([])
     window = listCollectionWidget("Science", "this is the science section for get the some knowledges.....", "images/sys_images/coll_img1.jpg", "0/1/2")
     window.show()
+
+    # create the list view
+    model = favoriteListModel(todos=[{"title" : "len", "type" : "collection"}])
+    model.layoutChanged.emit()
+    listview = QListView()
+    print(model.todos)
+    listview.setModel(model)
+
+
+    listview.show()
+
     app.exec_()
 

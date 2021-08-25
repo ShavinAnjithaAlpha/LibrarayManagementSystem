@@ -62,6 +62,10 @@ dark_style_sheet = """
                                             border : none;
                                             padding : 10px;
                                             font-size : 18px;}
+                                            
+                QLabel#favoriteTitleLabel , QLabel#recentTitleLabel {background-color : rgb(40, 40, 40);
+                                            font-size : 16px;
+                                            padding : 5px;}
                 
                 """
 
@@ -106,6 +110,7 @@ dark_style_sheet_for_widgets = """
                                                             
                                 QDialog QPushButton:hover {background-color : rgb(240, 60, 6);
                                                             color : black;}
+                                                            
                                 
                                 """
 
@@ -120,5 +125,15 @@ dark_style_sheet_for_Collection = """
                                                                         alignment : center}
                                                                         
                                     QLabel#collectionTitleLabel {color : rgb(200, 200, 200)}
+                                    
+                                    QPushButton#favoriteButton {background-color : white;
+                                                                        min-width : 30px;
+                                                                        min-height : 30px;
+                                                                        max-width : 30px;
+                                                                        max-height : 30px;
+                                                                        border : 1px solid white;
+                                                                        border-radius : 15px;}
+                                                                        
+                                    QPushButton#favoriteButton {background : none}
                                     
                                     """
