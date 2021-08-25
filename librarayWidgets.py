@@ -9,6 +9,8 @@ from PyQt5.QtGui import QFont, QColor, QPixmap, QImage
 # create the collection widget
 class collectionWidget(QWidget):
 
+    # defined the new signal for change the favorite widgets of the model
+    favoriteSignal = pyqtSignal(list)
 
     def __init__(self, title, description, image_dir, path):
         super(collectionWidget, self).__init__()
@@ -96,10 +98,25 @@ class collectionWidget(QWidget):
 
             with open("db/favorite.json", "w") as file:
                 json.dump(user_data, file, indent=4)
+            # fire hte favorite signal
+            self.favoriteSignal.emit([self.title, self.path, id, True])
 
         else:
             # remove the item from the favorites
-            pass
+            with open("db/favorite.json", "r") as file:
+                user_data = json.load(file)
+
+            # select the correct item and clear it
+            for item in user_data:
+                if item["path"] == self.path:
+                    user_data.remove(item)
+
+            # save the updated user_data
+            with open("db/favorite.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+
+            # fire the signal
+            self.favoriteSignal.emit([self.title, self.path, id, False])
 
 class boxCollectionWidget(collectionWidget):
     def __init__(self, title, description, image_dir, path):
@@ -244,6 +261,30 @@ class favoriteListModel(QAbstractListModel):
             widgetType = collection_data["type"]
             if widgetType == "collection":
                 return self.collectionImage
+
+        elif role == Qt.TextAlignmentRole:
+            widgetType = self.todos[index.row()]["type"]
+
+            if widgetType == "collection":
+                return Qt.AlignLeft
+            else:
+                return Qt.AlignRight
+
+        elif role == Qt.BackgroundColorRole:
+            widget_type = self.todos[index.row()]["type"]
+
+            if widget_type == "collection":
+                return QColor(0, 0, 20)
+            else:
+                return QColor(20, 0 , 0)
+
+        elif role == Qt.FontRole:
+            widget_type = self.todos[index.row()]["type"]
+
+            if widget_type == "collection":
+                return QFont("verdana", 12)
+            else:
+                return QFont("verdana", 10)
 
     def rowCount(self, index):
         return len(self.todos)

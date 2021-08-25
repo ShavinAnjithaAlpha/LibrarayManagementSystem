@@ -6,7 +6,7 @@ from style_sheet import dark_style_sheet
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar, QListView)
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
 from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette
@@ -283,17 +283,47 @@ class LibraryMangementSystem(QMainWindow):
         self.favoriteModel = favoriteListModel()
 
         # create the list view
-        favoriteListWidget = QListView()
-        favoriteListWidget.setMinimumHeight(350)
-        favoriteListWidget.setModel(self.favoriteModel)
+        self.favoriteListWidget = QListView()
+        self.favoriteListWidget.setMinimumHeight(350)
+        self.favoriteListWidget.setModel(self.favoriteModel)
+        self.favoriteListWidget.clicked.connect(self.goToFavorite)
 
         # create the vbox for favorite bar
         vbox = QVBoxLayout()
         vbox.addWidget(titleLabel)
-        vbox.addWidget(favoriteListWidget)
+        vbox.addWidget(self.favoriteListWidget)
         vbox.addStretch()
 
         self.favoriteWidget.setLayout(vbox)
+
+    def goToFavorite(self, index : QModelIndex):
+
+        # get the data from the model
+        data = self.favoriteModel.todos[index.row()]
+
+        # open the new page
+        self.openNewPage(data["path"])
+        # clear the selection of the list view
+        self.favoriteListWidget.clearSelection()
+
+    def updateFavoriteModel(self, data : list):
+
+        if data[3]:
+            # get the data from the signal and update the model list
+            self.favoriteModel.todos.append({"title" : data[0], "path" : data[1], "id" : data[2], "type" : "collection"})
+            # fire the model layout changed signal
+            self.favoriteModel.layoutChanged.emit()
+            # clear the selectinoof the list
+            self.favoriteListWidget.clearSelection()
+        else:
+            # remove the seleted item from the model
+            for item in self.favoriteModel.todos:
+                if item["path"] == data[1]:
+                    self.favoriteModel.todos.remove(item)
+
+            # fire the signal
+            self.favoriteModel.layoutChanged.emit()
+            self.favoriteListWidget.clearSelection()
 
     def setUpRecentAccessBar(self):
 
@@ -589,6 +619,7 @@ class LibraryMangementSystem(QMainWindow):
         # set the event handler
         collection_widget.mouseDoubleClickEvent = (lambda a, e = collection_widget.path : self.openNewPage(e))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
+        collection_widget.favoriteSignal.connect(self.updateFavoriteModel)
 
 
 
@@ -726,6 +757,7 @@ class LibraryMangementSystem(QMainWindow):
 
             widget.mouseDoubleClickEvent = (lambda a, e = widget.path : self.openNewPage(e))
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
+            widget.favoriteSignal.connect(self.updateFavoriteModel)
             # add the widget to stage
             self.currentStage.addCollection(widget, data)
         if isinstance(self.stageLayout, QVBoxLayout):

@@ -8,7 +8,7 @@ dark_style_sheet = """
                 
                 QScrollArea#mainScrollArea {border : none}
                 
-                QTabWidget#reminderTab::tab:clicked {background-color : rgb(200, 50, 50);
+                QTabWidget#reminderTab::tab-bar::tab:clicked {background-color : rgb(200, 50, 50);
                                                 border : none}
                                                 
                 QWidget#statusWidget {background-color : rgb(0 ,0, 0);
@@ -126,14 +126,20 @@ dark_style_sheet_for_Collection = """
                                                                         
                                     QLabel#collectionTitleLabel {color : rgb(200, 200, 200)}
                                     
-                                    QPushButton#favoriteButton {background-color : white;
-                                                                        min-width : 30px;
-                                                                        min-height : 30px;
-                                                                        max-width : 30px;
-                                                                        max-height : 30px;
+                                    QPushButton#favoriteButton:!checked {background : none;
+                                                                        min-width : 20px;
+                                                                        min-height : 20px;
+                                                                        max-width : 20px;
+                                                                        max-height : 20px;
                                                                         border : 1px solid white;
-                                                                        border-radius : 15px;}
+                                                                        border-radius : 10px;}
                                                                         
-                                    QPushButton#favoriteButton {background : none}
+                                    QPushButton#favoriteButton:checked {background : white;
+                                                                        min-width : 20px;
+                                                                        min-height : 20px;
+                                                                        max-width : 20px;
+                                                                        max-height : 20px;
+                                                                        border : 1px solid white;
+                                                                        border-radius : 10px;}
                                     
                                     """
