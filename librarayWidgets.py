@@ -4,7 +4,7 @@ import sqlite3
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QAbstractListModel, QModelIndex, QAbstractItemModel
-from PyQt5.QtGui import QFont, QColor, QPixmap, QImage
+from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon
 
 
 # create the book widget
@@ -57,18 +57,23 @@ class boxBookWidget(bookWidget):
         super(boxBookWidget, self).__init__(title, book_id, path)
 
         # set the widget size settings
-        self.setMaximumSize(QSize(450, 400))
+        self.setMaximumSize(QSize(600, 400))
 
         self.coverImageLabel.setFixedSize(QSize(250, 300))
         # set the pix map
         self.coverImageLabel.setPixmap(
             QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
                                                         Qt.FastTransformation))
+        self.titleLabel.setWordWrap(True)
+
+        # create the v box for pack the title and form
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.titleLabel)
+        vbox.addLayout(self.formLyt)
         # create the grid
         gridLyt = QGridLayout()
-        gridLyt.addWidget(self.titleLabel, 0, 1, 1, 1)
         gridLyt.addWidget(self.coverImageLabel, 0, 0, 2, 1)
-        gridLyt.addLayout(self.formLyt, 1, 1)
+        gridLyt.addLayout(vbox, 0, 1, 2, 1)
         gridLyt.addWidget(self.addFavoriteButton, 0, 2)
 
         self.baseWidget.setLayout(gridLyt)
@@ -78,18 +83,18 @@ class listBookWidget(bookWidget):
         super(listBookWidget, self).__init__(title, book_id, path)
 
         # set the widget size settings
-        self.setMaximumHeight(200)
+        self.setMaximumHeight(150)
 
-        self.coverImageLabel.setFixedSize(QSize(150, 150))
+        self.coverImageLabel.setFixedSize(QSize(50, 50))
         # set the pix map
         self.coverImageLabel.setPixmap(
             QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
                                                         Qt.FastTransformation))
         # create the grid
         gridLyt = QGridLayout()
-        gridLyt.addWidget(self.titleLabel, 0, 0, 1, 2)
-        gridLyt.addWidget(self.coverImageLabel, 1, 0)
-        gridLyt.addLayout(self.formLyt, 1, 1)
+        gridLyt.addWidget(self.titleLabel, 0, 1)
+        gridLyt.addWidget(self.coverImageLabel, 0, 0)
+        # gridLyt.addLayout(self.formLyt, 1, 1)
         gridLyt.addWidget(self.addFavoriteButton, 0, 2)
 
         self.baseWidget.setLayout(gridLyt)
@@ -134,16 +139,24 @@ class collectionWidget(QWidget):
             self.descriptionLabel.setText("No Description yet")
 
         self.imageLabel = QLabel()
-        self.imageLabel.setFixedSize(QSize(180, 200))
+        self.imageLabel.setFixedSize(QSize(180, 170))
         self.imageLabel.setPixmap(
             QPixmap(self.image_dir).scaled(self.imageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
 
         # create the favorite button
         self.addFavoriteButton = QPushButton()
         self.addFavoriteButton.setObjectName("favoriteButton")
+        self.addFavoriteButton.setIconSize(QSize(30, 30))
         self.addFavoriteButton.clicked.connect(self.changeFavoriteState)
         self.addFavoriteButton.setCheckable(True)
         self.setState()
+
+    def setIcon(self):
+
+        if self.addFavoriteButton.isChecked():
+            self.addFavoriteButton.setIcon(QIcon("images/sys_images/fillStar.png"))
+        else:
+            self.addFavoriteButton.setIcon(QIcon("images/sys_images/nonFillStar.png"))
 
     def setState(self):
 
@@ -155,8 +168,10 @@ class collectionWidget(QWidget):
         for item in user_data:
             if item["path"]  == self.path:
                 self.addFavoriteButton.setChecked(True)
+                self.addFavoriteButton.setIcon(QIcon("images/sys_images/fillStar.png"))
                 return None
         self.addFavoriteButton.setChecked(False)
+        self.addFavoriteButton.setIcon(QIcon("images/sys_images/nonFillStar.png"))
 
     def changeFavoriteState(self, state):
 
@@ -206,6 +221,7 @@ class collectionWidget(QWidget):
 
             # fire the signal
             self.favoriteSignal.emit([self.title, self.path, id, False])
+        self.setIcon()
 
 class boxCollectionWidget(collectionWidget):
     def __init__(self, title, description, image_dir, path):
@@ -214,9 +230,11 @@ class boxCollectionWidget(collectionWidget):
 
     def initializeUI(self):
 
-        self.setMinimumSize(QSize(300, 250))
-        self.setMaximumSize(QSize(500, 350))
+        self.setMinimumSize(QSize(400, 300))
+        self.setMaximumSize(QSize(700, 400))
 
+        # set the word wrapoption totitle ;abel
+        self.titleLabel.setWordWrap(True)
         # create the grid layout for pack the items
         self.gridLyt  = QGridLayout()
 
@@ -235,8 +253,8 @@ class listCollectionWidget(collectionWidget):
 
     def initializeUI(self):
 
-        self.setMinimumHeight(200)
-        self.setMaximumHeight(350)
+        self.setMinimumHeight(150)
+        self.setMaximumHeight(220)
 
         self.titleLabel.setFont(QFont("verdana", 22))
 

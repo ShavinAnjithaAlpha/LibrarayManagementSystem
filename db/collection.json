@@ -2,32 +2,32 @@
     "p2qf2": {
         "title": "Physics",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "fqcl3": {
         "title": "Chemistry",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "nfhw6": {
         "title": "Mathematics",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "rprzc": {
         "title": "Languages",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "8j66j": {
         "title": "Strory Books",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "1ifm2": {
         "title": "Fairy Books",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "duww4": {
         "title": "ElectroMagnetics",
@@ -82,12 +82,12 @@
     "9njot": {
         "title": "D Block",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "cl1xs": {
         "title": "S Block",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "du967": {
         "title": "P Block",
@@ -107,31 +107,31 @@
     "yueiu": {
         "title": "Waves",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "136rn": {
         "title": "Sherlok Holmes",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "l3bix": {
         "title": "Artthur C. Clerk Book Series",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "kl4fm": {
         "title": "Mxwell Equations",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "q2xu1": {
         "title": "TV Signal Processings",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     },
     "94jsz": {
         "title": "Bluetooth Processing",
         "description": "",
-        "image_dir": "images/sys_images/coll_img1.jpg"
+        "image_dir": "images/sys_images/coll_img1.png"
     }
 }

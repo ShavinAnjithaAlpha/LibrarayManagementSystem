@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, Q
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
 from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel, listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
-from PyQt5.QtGui import QColor, QPalette
+from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
@@ -343,16 +343,27 @@ class LibraryMangementSystem(QMainWindow):
         # create the search bar for library system
         self.searchBar = QLineEdit()
         self.searchBar.setObjectName("searchBar")
-        self.searchBar.setMinimumSize(QSize(400, 50))
+        self.searchBar.setMinimumSize(QSize(500, 50))
         # self.searchBar.setMaximumSize(QSize(500, 60))
         self.searchBar.setPlaceholderText("search anything")
         self.searchBar.setAlignment(Qt.AlignRight)
+
+        # create the label with search icon
+        searchIcon = QLabel()
+        searchIcon.setPixmap(QPixmap("images/sys_images/search_icon.png").scaled(QSize(45, 45), Qt.KeepAspectRatio,
+                                                                                 Qt.SmoothTransformation))
+
+        # create the box for pack the search items
+        hboxSearch = QHBoxLayout()
+        hboxSearch.setSpacing(10)
+        hboxSearch.addWidget(searchIcon)
+        hboxSearch.addWidget(self.searchBar)
         # create the grid layout for pack the searchBar
 
         grid_lyt = QGridLayout()
         grid_lyt.setSpacing(10)
 
-        grid_lyt.addWidget(self.searchBar, 1, 2, 1, 3)
+        grid_lyt.addLayout(hboxSearch, 1, 1, 1, 3)
 
         # create the group box for pack the radio buttons
         group_box = QGroupBox()
@@ -374,15 +385,14 @@ class LibraryMangementSystem(QMainWindow):
 
         # set the layout ot the group box
         group_box.setLayout(h_box_radios)
-        grid_lyt.addWidget(group_box, 0, 1, 1, 3)
+        grid_lyt.addWidget(group_box, 0, 1, 1, 2)
 
         # create the button for new collection or add book
         self.addButton = QPushButton("+")
         self.addButton.setObjectName("addButton")
         self.addButton.setFont(QFont("verdana", 25))
         self.addButton.pressed.connect(self.addNewItem)
-        # add to the grid
-        grid_lyt.addWidget(self.addButton, 1, 0, 1, 1)
+
 
         # create the theme box
         self.themeBox = switchButton("list theme" , "box theme", "list", "box")
@@ -390,27 +400,38 @@ class LibraryMangementSystem(QMainWindow):
         grid_lyt.addWidget(self.themeBox, 0, 0)
 
         # create the refresh button
-        refreshButton = QPushButton("refresh")
+        refreshButton = QPushButton()
+        refreshButton.setIcon(QIcon("images/sys_images/refresh_icon.png"))
+        refreshButton.setIconSize(QSize(45, 45))
+        refreshButton.setObjectName("refreshButton")
         refreshButton.pressed.connect(self.refreshPage)
-        grid_lyt.addWidget(refreshButton, 0, 4)
+        grid_lyt.addWidget(refreshButton, 0, 3)
 
         # backward button
-        self.backwardButton =  QPushButton("<-")
+        self.backwardButton =  QPushButton()
+        self.backwardButton.setIcon(QIcon("images/sys_images/backward_icon.png"))
+        self.backwardButton.setIconSize(QSize(45, 45))
         self.backwardButton.setObjectName("backwardButton")
         self.backwardButton.setEnabled(False)
         self.backwardButton.pressed.connect(self.goBack)
 
-        self.forwardButton = QPushButton("->")
+        self.forwardButton = QPushButton()
+        self.forwardButton.setIcon(QIcon("images/sys_images/forward_icon.png"))
+        self.forwardButton.setIconSize(QSize(45, 45))
         self.forwardButton.setObjectName("forwardButton")
         self.forwardButton.setEnabled(False)
         self.forwardButton.pressed.connect(self.goForward)
 
         # create the small h box
         buttonHBox = QHBoxLayout()
+        buttonHBox.setSpacing(10)
+        buttonHBox.addWidget(self.addButton)
+        buttonHBox.addSpacing(20)
         buttonHBox.addWidget(self.backwardButton)
         buttonHBox.addWidget(self.forwardButton)
+        buttonHBox.addStretch()
         # add to the grid
-        grid_lyt.addLayout(buttonHBox, 1, 1, 1, 1)
+        grid_lyt.addLayout(buttonHBox, 1, 0, 1, 2)
 
 
         # set the toolBar widget ;layout as the grid_lyt
@@ -718,6 +739,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # render the page again
         self.renderNewPageForCollection(self.currentPath)
+        self.renderNewPageForBook(self.currentPath)
 
     def goBack(self):
 
@@ -730,6 +752,7 @@ class LibraryMangementSystem(QMainWindow):
         self.currentPath = self.currentStage.goBackward()
         # reload the page
         self.renderNewPageForCollection(self.currentPath)
+        self.renderNewPageForBook(self.currentPath)
 
         # set the backward button options
         self.setBackForwardState()
@@ -745,6 +768,7 @@ class LibraryMangementSystem(QMainWindow):
         self.currentPath = self.currentStage.goForward()
         # reload the page
         self.renderNewPageForCollection(self.currentPath)
+        self.renderNewPageForBook(self.currentPath)
 
         # set the backward button options
         self.setBackForwardState()

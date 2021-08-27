@@ -7,7 +7,7 @@ from style_sheet import dark_style_sheet_for_widgets
 
 class newCollectionDialog(QDialog):
 
-    default_image = "images/sys_images/coll_img1.jpg"
+    default_image = "images/sys_images/coll_img1.png"
 
     def __init__(self, parent = None):
         super(newCollectionDialog, self).__init__(parent=parent)
@@ -44,13 +44,13 @@ class newCollectionDialog(QDialog):
         self.checkImage.stateChanged.connect(self.setButtonState)
 
         self.imageDirEdit = QLineEdit()
-        self.imageDirEdit.resize(230, 40)
+        self.imageDirEdit.resize(150, 70)
         self.imageDirEdit.setObjectName("imageDirEdit")
         self.imageDirEdit.setReadOnly(True)
 
         # crate the image choose button
         self.imageChooseButton = QPushButton("Choose")
-        self.imageChooseButton.setFixedSize(QSize(50, 30))
+        self.imageChooseButton.setFixedSize(QSize(100, 40))
         self.imageChooseButton.setEnabled(False)
         self.imageChooseButton.pressed.connect(self.chooseImagePath)
 
@@ -104,7 +104,7 @@ class newCollectionDialog(QDialog):
             else:
                 if (self.imageDirEdit.text() != ""):
                     # copy the image to images folder
-                    new_dir = os.path.join("images/sys_images", os.path.split(self.imageDirEdit.text())[1])
+                    new_dir = os.path.join("images", os.path.split(self.imageDirEdit.text())[1])
                     shutil.copyfile(self.imageDirEdit.text() , new_dir)
                     self.info_dict = {
                             "title" : self.titleEdit.text(),

@@ -8,8 +8,18 @@ dark_style_sheet = """
                 
                 QScrollArea#mainScrollArea {border : none}
                 
-                QTabWidget#reminderTab::tab-bar::tab:clicked {background-color : rgb(200, 50, 50);
-                                                border : none}
+                QTabBar::tab {background-color : rgb(240, 0 ,0);
+                                                border : none;
+                                                padding : 10px;
+                                                color : black;
+                                                border-right : 1px solid black;
+                                                font-size : 15px;
+                                                width : 80px}
+                QTabBar::tab:selected {background-color : rgb(240, 50, 5);
+                                    color : black}
+                                    
+                QTabWidget#reminderTab::pane {border : 1px solid rgb(50, 50, 50);
+                                        border-radius : 5px;}
                                                 
                 QWidget#statusWidget {background-color : rgb(0 ,0, 0);
                                     border : none}
@@ -37,12 +47,22 @@ dark_style_sheet = """
                                         margin : 0px 0px 0px 0px;}
                                         
                 QRadioButton#searchOptionRadioButton {color : rgb(200, 200, 200);
-                                                    background : none}
-                                                    
+                                                    background : none;
+                                                    font-size : 16px}
+                
+                QRadioButton#searchOptionRadioButton::indicator:!checked {background-color : rgb(60, 60, 60);
+                                                                        max-width : 25px;
+                                                                        max-height : 25px;
+                                                                        min-width : 25px;
+                                                                        height : 25px;
+                                                                        border-radius : 12px;}
+                
                 QRadioButton#searchOptionRadioButton::indicator:checked {background-color : rgb(240, 60, 6);
-                                                                        width : 30px;
-                                                                        height : 30px;
-                                                                        border-radius : 15px;}
+                                                                         max-width : 25px;
+                                                                        max-height : 25px;
+                                                                        min-width : 25px;
+                                                                        min-height : 25px;
+                                                                        border-radius : 12px;}
                 
                 QGroupBox {border : none;
                             background : none}
@@ -66,29 +86,78 @@ dark_style_sheet = """
                 QLabel#favoriteTitleLabel , QLabel#recentTitleLabel {background-color : rgb(40, 40, 40);
                                             font-size : 16px;
                                             padding : 5px;}
+                                            
+                                            
+                QPushButton#backwardButton {border : none;}
+                
+                QPushButton#backwardButton:hover:enabled {background-color : rgb(50, 50, 50);
+                                                        border-radius : 20px;}
+                
+                QPushButton#forwardButton {border : none;}
+                
+                QPushButton#forwardButton:hover:enabled {background-color : rgb(50, 50, 50);
+                                                        border-radius : 20px;}
+                                                        
+                QPushButton#refreshButton {background : none;
+                                        border : none;
+                                        max-width : 50px;
+                                        min-width : 50px;}
+                                        
+                QPushButton#refreshButton:hover {background-color : rgb(50, 50, 50);
+                                                max-width : 50px;
+                                                min-width : 50px;
+                                                border-radius : 20px;}
+                                                
+                QPushButton#showButton , QPushButton#hideButton {background : none;
+                                                                color : white;
+                                                                border : none;
+                                                                padding : 10px;
+                                                                font-size : 25px;}
+                                                                
+                QPushButton#showButton:hover , QPushButton#hideButton:hover {background : none;
+                                                                color : blue;}
+                                                                
+                QListWidgetItem {background-color : rgb(50, 50, 50)}
+                
                 
                 """
 
 dark_style_sheet_for_widgets = """
                                 
-                                QPushButton#switchButtonLeft, QPushButton#switchButtonRight {background-color : rgb(60, 60, 60);
-                                                                                                            color : white;
-                                                                                                            font-size : 15px;
-                                                                                                            padding : 5px;
-                                                                                                            border : none;
-                                                                                                    border-radius : 0px;}
+                                QPushButton#switchButtonLeft {background-color : rgb(60, 60, 60);
+                                                                color : white;
+                                                                font-size : 16px;
+                                                                padding : 5px;
+                                                                border : none;
+                                                                max-width : 220px;
+                                                                border-top-right-radius : 0px;
+                                                                border-bottom-right-radius : 0px;
+                                                                border-top-left-radius : 10px;
+                                                                border-bottom-left-radius : 10px;}
+                                                                                                    
+                                QPushButton#switchButtonRight {
+                                                                background-color : rgb(60, 60, 60);
+                                                                color : white;
+                                                                max-width : 220px;
+                                                                font-size : 16px;
+                                                                padding : 5px;
+                                                                border : none;
+                                                                border-top-right-radius : 10px;
+                                                                border-bottom-right-radius : 10px;
+                                                                border-top-left-radius : 0px;
+                                                                border-bottom-left-radius : 0px;}
                                                                                                     
                                 QPushButton#switchButtonLeft:checked, QPushButton#switchButtonRight:checked {background-color : rgb(240, 60, 6);
-                                                                                                            color : white;
-                                                                                                            padding : 5px;
-                                                                                                            border : none;
-                                                                                                    border-radius : 0px;}
+                                                                                                                color  : black;
+                                                                                                                font-weight : bold}
                                                                                                     
                                 QLineEdit#titleEdit {background : none;
                                                     border : 1px solid rgb(100, 100, 100);
                                                     padding : 5px;
                                                     color : white
                                                     }
+                                
+                                QLineEdit#titleEdit:focus , QTextEdit:focus {border : 1px solid rgb(240, 65, 5)}
                                 
                                 QTextEdit#descriptionEdit {background : none;
                                                             border : 1px solid rgb(100, 100, 100);
@@ -101,16 +170,20 @@ dark_style_sheet_for_widgets = """
                                                             
                                 QDialog QLabel {font-size : 15px;}
                                 
-                                QDialog QPushButton {background : none;
+                                QDialog > QPushButton {background : none;
                                                             border : 1px solid rgb(100,100, 100);
                                                             border-radius : 2px;
                                                             padding : 3px;
                                                             color : white;
                                                             font-size : 15px;}
                                                             
-                                QDialog QPushButton:hover {background-color : rgb(240, 60, 6);
+                                QDialog > QPushButton:hover {background-color : rgb(240, 60, 6);
                                                             color : black;}
-                                                            
+                                      
+                                QCheckBox {font-size : 15px;}
+                                QCheckBox::indicator:!checked {background-image : url(images/sys_images/unchecked_box.png);}
+                                
+                                QCheckBox::indicator:checked {background-image : url(images/sys_images/check_box.png)}                      
                                 
                                 """
 
@@ -126,20 +199,21 @@ dark_style_sheet_for_Collection = """
                                                                         
                                     QLabel#collectionTitleLabel {color : rgb(200, 200, 200)}
                                     
-                                    QPushButton#favoriteButton:!checked {background : none;
+                                    QPushButton#favoriteButton:!checked {
+                                                                        background : none;
                                                                         min-width : 20px;
                                                                         min-height : 20px;
-                                                                        max-width : 20px;
-                                                                        max-height : 20px;
-                                                                        border : 1px solid white;
+                                                                        max-width : 50px;
+                                                                        max-height : 50px;
+                                                                        
                                                                         border-radius : 10px;}
                                                                         
-                                    QPushButton#favoriteButton:checked {background : white;
+                                    QPushButton#favoriteButton:checked {
+                                                                        background : none;
                                                                         min-width : 20px;
                                                                         min-height : 20px;
-                                                                        max-width : 20px;
-                                                                        max-height : 20px;
-                                                                        border : 1px solid white;
+                                                                        max-width : 50px;
+                                                                        max-height : 50px;
                                                                         border-radius : 10px;}
                                                                         
                                     QWidget#bookBaseWidget {background-color : rgb(0, 0, 10);
@@ -148,9 +222,9 @@ dark_style_sheet_for_Collection = """
                                                             color : white}
                                                             
                                     QLabel#bookTitleLabel {background : none;
-                                                            font-size : 15px;
                                                             font-family : verdana;
-                                                            color : rgb(200, 0, 150)}
+                                                            font-size : 16px;
+                                                            color : rgb(200, 200, 200)}
                                                             
                                     QPushButton#bookFavoriteButton:!checked {background : none;
                                                                         min-width : 20px;
