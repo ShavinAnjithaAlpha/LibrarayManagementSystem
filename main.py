@@ -362,6 +362,7 @@ class LibraryMangementSystem(QMainWindow):
         # self.searchBar.setMaximumSize(QSize(500, 60))
         self.searchBar.setPlaceholderText("search anything")
         self.searchBar.setAlignment(Qt.AlignRight)
+        self.searchBar.textChanged.connect(self.searchThings)
 
         # create the label with search icon
         searchIcon = QLabel()
@@ -590,6 +591,21 @@ class LibraryMangementSystem(QMainWindow):
 
         self.selectDialog.setLayout(vbox)
         self.selectDialog.show()
+
+    def searchThings(self, text : str):
+
+        # search the items
+        for widget in self.currentStage.collectionWidgets:
+            if text.lower() in widget.title.lower():
+                widget.show()
+            else:
+                widget.hide()
+
+        for widget in self.currentStage.bookWidgets:
+            if text.lower() in widget.title.lower():
+                widget.show()
+            else:
+                widget.hide()
 
     def responeOfSelectDialog(self, text):
 

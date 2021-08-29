@@ -46,5 +46,47 @@
         "id": "tuj29",
         "title": "Quantum Mechnism",
         "path": "/0/3/"
+    },
+    {
+        "type": "book",
+        "id": "cdwqj",
+        "title": "Einstein_Relativity.pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "c9rtx",
+        "title": "Introduction to General Relativity, Black Holes and Cosmology by Yvonne Choquet-Bruhat (z-lib.org).pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "9hot3",
+        "title": "Relativity The Special and the General Theory by Albert Einstein, Roger Penrose, Robert Geroch, David C. Cassidy (z-lib.org).pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "dx2ki",
+        "title": "stephen_hawking_a_brief_history_of_time.pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "m5epz",
+        "title": "The Grand Design by Stephen Hawking, Leonard Mlodinow (z-lib.org).pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "kh8lg",
+        "title": "The nature of space and time by Stephen Hawking, Roger Penrose, Stephen Hawking, Roger Penrose (z-lib.org).pdf",
+        "path": "/0/2/"
+    },
+    {
+        "type": "book",
+        "id": "2uuyw",
+        "title": "Quantum mechanics. The theoretical minimum by Leonard Susskind, Art Friedman (z-lib.org).pdf",
+        "path": "/0/3/"
     }
 ]

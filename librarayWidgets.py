@@ -518,10 +518,10 @@ class favoriteListModel(QAbstractListModel):
         elif role == Qt.BackgroundColorRole:
             widget_type = self.todos[index.row()]["type"]
 
-            if widget_type == "collection":
-                return QColor(0, 0, 30)
+            if self.todos.index(self.todos[index.row()]) % 2 == 0:
+                return QColor(20, 20, 20)
             else:
-                return QColor(40, 0 , 0)
+                return QColor(30, 30, 30)
 
         elif role == Qt.FontRole:
             widget_type = self.todos[index.row()]["type"]
@@ -611,7 +611,7 @@ class RecentItemModel(QAbstractListModel):
             data = self.todos[index.row()]
 
             if data[-1] == "collection":
-                return QColor(0, 50, 50)
+                return QColor(0, 0, 0)
             else:
                 return QColor(50, 20, 0)
 

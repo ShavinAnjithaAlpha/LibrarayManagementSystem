@@ -151,11 +151,8 @@ dark_style_sheet = """
                                                 {background : none;
                                                 border : none}
                                                 
-                QListView {margin-right : 0px;
-                            margin-left : 0px;
-                            margin-top : 0px;
-                            margin-bottom : 0px;
-                            border: none;
+                QListWidget {
+                            border-left : 2px solid rgb(240, 0 ,0);
                             background : none}
                             
                 QInputDialog QPlainTextEdit {border : 1px solid rgb(100, 100, 100);
