@@ -154,8 +154,32 @@ dark_style_sheet = """
                 QListView {margin-right : 0px;
                             margin-left : 0px;
                             margin-top : 0px;
-                            margin-bottom : 0px;}
-                
+                            margin-bottom : 0px;
+                            border: none;
+                            background : none}
+                            
+                QInputDialog QPlainTextEdit {border : 1px solid rgb(100, 100, 100);
+                                        border-radius : 5px;
+                                        font-size : 16px;
+                                        color : white;
+                                        min-width : 700px;
+                                        padding : 10px;
+                                        min-height : 350px;}
+                                        
+                QInputDialog QLabel {font-size : 18px;}
+                                        
+                QInputDialog QPushButton {background : none;
+                                        color: white;
+                                        border : 1px solid rgb(100,100, 100);
+                                        border-radius : 2px;
+                                        padding : 5px;
+                                        font-size : 17px;}
+                                        
+                                
+                                         
+                QInputDialog QPushButton:hover {background-color : rgb(240, 60, 6);
+                                                border : none;
+                                                color : black}
                 
                 """
 

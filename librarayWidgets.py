@@ -1,10 +1,12 @@
 import json
+import shutil
 import sqlite3
+import os
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout, QMenu,
-                             QAction)
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QAbstractListModel, QModelIndex, QAbstractItemModel
+                             QAction, QInputDialog, QFileDialog)
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex
 from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon
 
 
@@ -224,19 +226,47 @@ class collectionWidget(QWidget):
         self.menu = QMenu(self)
 
         # create the action
-        self.changeTitleAction = QAction("change Title", self)
+        self.changeTitleAction = QAction("Change Title", self)
         self.changeTitleAction.triggered.connect(self.changeTitle)
         self.changeTitleAction.setToolTip("Change the Collection title you want")
 
-        self.changeDesAction = QAction("change Description", self)
+        self.changeDesAction = QAction("Change Description", self)
         self.changeDesAction.triggered.connect(self.changeDescription)
         self.changeDesAction.setToolTip("Change the Collection Description you want")
+
+        self.changeImageAction = QAction("Change Cover Image", self)
+        self.changeImageAction.triggered.connect(self.changeImage)
+        self.changeImageAction.setToolTip("Change the Collection Cover Image you want")
 
         # add to the menu
         self.menu.addAction(self.changeTitleAction)
         self.menu.addAction(self.changeDesAction)
+        self.menu.addAction(self.changeImageAction)
 
         self.menuButton.setMenu(self.menu)
+
+    def changeImage(self):
+
+        # open the file dialog and change the image dir
+        file, ok = QFileDialog.getOpenFileName(self, "Open the Cover Image", "", "JPG Files(*.jpg);; PNG Files(*.png)")
+        if ok:
+
+            # change the image dir to relative path
+            new_path = os.path.join("images", os.path.split(file)[1])
+            shutil.copyfile(file ,new_path)
+
+            # save the changes
+            user_data = {}
+            with open("db/collection.json", "r") as file:
+                user_data = json.load(file)
+
+            user_data.get(self.collection_id)["image_dir"] = new_path
+
+            with open("db/collection.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+
+            # change the image
+            self.imageLabel.setPixmap(QPixmap(new_path).scaled(self.imageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
 
     def changeTitle(self):
 
@@ -244,7 +274,22 @@ class collectionWidget(QWidget):
 
     def changeDescription(self):
 
-        pass
+        # prompt the text dialog for get the new description
+        text, ok = QInputDialog.getMultiLineText(self, "New Description Dialog", "Description : ", text=self.description)
+        if ok:
+            # change the collection json file
+            user_data = {}
+            with open("db/collection.json", "r") as file:
+                user_data = json.load(file)
+
+            # find the code and change the description
+            user_data.get(self.collection_id)["description"] = text
+            # save the changes
+            with open("db/collection.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+
+            # change hte curren widget description
+            self.descriptionLabel.setText(text)
 
     def setIcon(self):
 
@@ -512,11 +557,35 @@ class RecentItemModel(QAbstractListModel):
         user_data = []
         with open("db/collection_tracking.json", "r") as file:
             user_data = json.load(file)
+
+        # filter the duplicates
+        user_data = RecentItemModel.filterDuplicates(user_data, 0)
         # limit the user data list
         if len(user_data) > 15:
             user_data = user_data[:15]
 
         self.todos = user_data
+
+    @staticmethod
+    def filterDuplicates(itemList : list, key = 0):
+
+        # remove the duplicates and return the filtered list
+        filtered_list = []
+        itemList.reverse()
+
+        for item in itemList:
+            check = True
+            for j in filtered_list:
+                if j[key] == item[key]:
+                    check = False
+                    break
+
+            # append to the new list based on the check boolean
+            if check:
+                filtered_list.append(item)
+
+        return filtered_list
+
 
     def data(self, index: QModelIndex, role: int):
 
