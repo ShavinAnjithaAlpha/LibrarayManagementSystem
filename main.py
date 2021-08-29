@@ -7,7 +7,7 @@ from style_sheet import dark_style_sheet
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar, QListView)
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
-from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, favoriteListModel, listBookWidget, boxBookWidget
+from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
 # Press Shift+F10 to execute it or replace it with your code.
@@ -118,6 +118,10 @@ class LibraryMangementSystem(QMainWindow):
 
         if not os.path.exists("db/favorite.json"):
             with open("db/favorite.json", "w") as file:
+                json.dump([], file, indent=4)
+
+        if not os.path.exists("db/collection_tracking.json"):
+            with open("db/collection_tracking.json", "w") as file:
                 json.dump([], file, indent=4)
 
 
@@ -256,14 +260,15 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the two main widgets for favorites and quick access
         self.favoriteWidget = QWidget()
-
+        self.favoriteWidget.setContentsMargins(0, 0, 0, 0)
 
         # recent access
         self.recentaccessWidget = QWidget()
-
+        self.recentaccessWidget.setContentsMargins(0, 0, 0, 0)
 
         # create the vbox for pack the widgets
         vbox = QVBoxLayout()
+        vbox.setSpacing(0)
         vbox.addWidget(self.favoriteWidget)
         vbox.addWidget(self.recentaccessWidget)
         vbox.addStretch()
@@ -284,7 +289,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the list view
         self.favoriteListWidget = QListView()
-        self.favoriteListWidget.setMinimumHeight(350)
+        self.favoriteListWidget.setMinimumHeight(400)
         self.favoriteListWidget.setModel(self.favoriteModel)
         self.favoriteListWidget.clicked.connect(self.goToFavorite)
 
@@ -302,7 +307,7 @@ class LibraryMangementSystem(QMainWindow):
         data = self.favoriteModel.todos[index.row()]
 
         # open the new page
-        self.openNewPage(data["path"])
+        self.openNewPage(data["path"], data["id"])
         # clear the selection of the list view
         self.favoriteListWidget.clearSelection()
 
@@ -310,13 +315,13 @@ class LibraryMangementSystem(QMainWindow):
 
         if data[3]:
             # get the data from the signal and update the model list
-            self.favoriteModel.todos.append({"title" : data[0], "path" : data[1], "id" : data[2], "type" : "collection"})
+            self.favoriteModel.todos.append({"title" : data[0], "path" : data[1], "id" : data[2], "type" : data[4]})
             # fire the model layout changed signal
             self.favoriteModel.layoutChanged.emit()
-            # clear the selectinoof the list
+            # clear the selection of the list
             self.favoriteListWidget.clearSelection()
         else:
-            # remove the seleted item from the model
+            # remove the selected item from the model
             for item in self.favoriteModel.todos:
                 if item["path"] == data[1]:
                     self.favoriteModel.todos.remove(item)
@@ -331,9 +336,19 @@ class LibraryMangementSystem(QMainWindow):
         titleLabel = QLabel("Recent Access")
         titleLabel.setObjectName("recentTitleLabel")
 
+        # create the list view for recent item,s
+        self.recentListView = QListView()
+        self.recentListView.setObjectName("recentListView")
+        self.recentListView.setMinimumHeight(700)
+
+        # create the recent model to set to the list view
+        self.recentModel = RecentItemModel()
+        self.recentListView.setModel(self.recentModel)
+
         # create the vbox for favorite bar
         vbox = QVBoxLayout()
         vbox.addWidget(titleLabel)
+        vbox.addWidget(self.recentListView)
         vbox.addStretch()
 
         self.recentaccessWidget.setLayout(vbox)
@@ -539,7 +554,14 @@ class LibraryMangementSystem(QMainWindow):
 
     def setUpStatusWidget(self):
 
-        pass
+        # create the new status widget and pack to the StatusWidget
+        self.statusBox = StatusWidget()
+
+        # create the layout and pack to them
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.statusBox)
+
+        self.statusWidget.setLayout(vbox)
 
     def addNewItem(self):
 
@@ -622,7 +644,9 @@ class LibraryMangementSystem(QMainWindow):
                 widget = boxBookWidget(os.path.split(file)[1], book_id, path)
                 count = self.currentStage.WidgetCount()
                 self.stageLayout.addWidget(widget, count//4, count%4)
-            print("2")
+            # connect to the slots th widget
+            widget.favoriteSignal.connect(self.updateFavoriteModel)
+
             # update the stage
             self.currentStage.addBook(widget, {"title" : os.path.split(file),
                                                "path" : path,
@@ -676,9 +700,9 @@ class LibraryMangementSystem(QMainWindow):
 
         # now create the new widget
         if self.getTheme() == "list":
-            collection_widget = listCollectionWidget(title, des, img, path)
+            collection_widget = listCollectionWidget(title, des, img, path, id_code)
         else:
-            collection_widget = boxCollectionWidget(title, des, img, path)
+            collection_widget = boxCollectionWidget(title, des, img, path, id_code)
 
         info_data = {"title": title,
                      "description": des,
@@ -689,7 +713,8 @@ class LibraryMangementSystem(QMainWindow):
         self.currentStage.addCollection(collection_widget, info_data)
 
         # set the event handler
-        collection_widget.mouseDoubleClickEvent = (lambda a, e = collection_widget.path : self.openNewPage(e))
+        collection_widget.mouseDoubleClickEvent = (lambda a, e = collection_widget.path,
+                                                          i = collection_widget.collection_id : self.openNewPage(e, i))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
         collection_widget.favoriteSignal.connect(self.updateFavoriteModel)
 
@@ -703,7 +728,7 @@ class LibraryMangementSystem(QMainWindow):
             count = self.currentStage.WidgetCount() - 1
             self.stageLayout.addWidget(collection_widget, count//4, count%4)
 
-    def openNewPage(self, newPath : str):
+    def openNewPage(self, newPath : str, id : str):
 
         # set the new path as the newPath
         self.currentPath = newPath
@@ -721,6 +746,9 @@ class LibraryMangementSystem(QMainWindow):
         self.renderNewPageForBook(self.currentPath)
         # set the back and forward settings
         self.setBackForwardState()
+
+        # update the tracking informations
+        self.saveCollectionTrackings(id)
 
     def refreshPage(self):
 
@@ -813,7 +841,8 @@ class LibraryMangementSystem(QMainWindow):
                             "path" : data[i][2],
                             "image_dir" : coll_data.get(data[i][1])["image_dir"],
                             "date" : data[i][4],
-                            "time" : data[i][5]}
+                            "time" : data[i][5],
+                            "id" : data[i][1]}
                 filter_data.append(new_dict)
 
         self.addCollectionWidgets(filter_data)
@@ -842,7 +871,7 @@ class LibraryMangementSystem(QMainWindow):
             new_dict = {"title" : os.path.split(filter_json_data[i][1])[1],
                         "path" : books_data[i][2],
                         "dir" : filter_json_data[i][1],
-                        "id" : books_data[1]}
+                        "id" : books_data[i][1]}
             originalData.append(new_dict)
 
         # create the new book used the original Data list
@@ -861,6 +890,8 @@ class LibraryMangementSystem(QMainWindow):
                 self.stageLayout.addWidget(widget, count//4, count%4)
             # update the stage area
             self.currentStage.addBook(widget, data)
+            # connect to the slots of the widget
+            widget.favoriteSignal.connect(self.updateFavoriteModel)
 
 
     def addCollectionWidgets(self, FilterData : list):
@@ -869,14 +900,14 @@ class LibraryMangementSystem(QMainWindow):
         for data in FilterData:
             # create the new widget
             if self.getTheme() == "list":
-                widget = listCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"])
+                widget = listCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["id"])
                 self.stageLayout.addWidget(widget)
             else:
-                widget = boxCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"])
+                widget = boxCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["id"])
                 count = self.currentStage.WidgetCount()
                 self.stageLayout.addWidget(widget, (count) // 4, (count) % 4)
 
-            widget.mouseDoubleClickEvent = (lambda a, e = widget.path : self.openNewPage(e))
+            widget.mouseDoubleClickEvent = (lambda a, e = widget.path, i = widget.collection_id : self.openNewPage(e, i))
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
             widget.favoriteSignal.connect(self.updateFavoriteModel)
             # add the widget to stage
@@ -884,17 +915,73 @@ class LibraryMangementSystem(QMainWindow):
         if isinstance(self.stageLayout, QVBoxLayout):
             self.stageLayout.addStretch()
 
+    def saveCollectionTrackings(self, id):
+
+        # get the current time and date
+        time = QTime.currentTime().toString("hh:mm:ss A")
+        date = QDate.currentDate().toString("dd/MM/yyyy")
+
+        with open("db/collection_tracking.json", "r") as file:
+            user_data = json.load(file)
+
+        # update the use data with current item
+        user_data.append([id, date, time, "collection"])
+
+        # save the changes
+        with open("db/collection_tracking.json", "w") as file:
+            json.dump(user_data, file ,indent=4)
+
+
+
     def setSelectionWidget(self, widget):
 
         # set thr stage selected widget as the this
         if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
-            self.currentStage.selected_widget = collectionWidget
+            self.currentStage.selected_widget = widget
             # update the status
-            self.setStatus()
+            self.setCollectionStatus()
 
-    def setStatus(self):
+    def setCollectionStatus(self):
 
-        pass
+        # get the current selected widget
+        widget = self.currentStage.selected_widget
+
+
+        # open the data base
+        connect = sqlite3.connect(self.db_file)
+        cursor = connect.cursor()
+
+        cursor.execute(f" SELECT * FROM collection_table WHERE collection_id = '{widget.collection_id}' ")
+        data = cursor.fetchall()
+
+        # close the connection
+        connect.close()
+        data = data[0]
+
+        # open the json file
+        with open("db/collection.json", "r") as file:
+            user_data = json.load(file)
+        des = user_data.get(widget.collection_id)["description"]
+
+        if des == "":
+            des = "No Description"
+
+        # get the widget basic data
+        widget_data = {"title" : widget.title,
+                "path" : widget.path,
+                "id" : widget.collection_id,
+                "des" : des,
+                "date" : data[4],
+                "time" : data[5]}
+
+        # first cleat the status box
+        self.statusBox.clearBox()
+        # fill the status box
+        self.statusBox.addLine("Title : ", widget_data["title"], wrap = True)
+        self.statusBox.addLine("Description : ", widget_data["des"], wrap=True)
+        self.statusBox.addSeperator()
+        # add the created date and time
+        self.statusBox.addLabel(f"Created On\n {widget_data['date']}\nAt {widget_data['time']}")
 
 
     def getNeedPaths(self, rootPath):

@@ -28,5 +28,23 @@
         "id": "rprzc",
         "title": "Languages",
         "path": "/3/"
+    },
+    {
+        "type": "book",
+        "id": "d1azf",
+        "title": "thermal conduction.pdf",
+        "path": "/0/"
+    },
+    {
+        "type": "book",
+        "id": "ga1ex",
+        "title": "The Science of Interstellar by Kip Thorne, Christopher Nolan (z-lib.org).pdf",
+        "path": "/0/"
+    },
+    {
+        "type": "collection",
+        "id": "tuj29",
+        "title": "Quantum Mechnism",
+        "path": "/0/3/"
     }
 ]

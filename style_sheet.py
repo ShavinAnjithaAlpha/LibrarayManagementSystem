@@ -3,7 +3,7 @@ dark_style_sheet = """
                 
                 QWidget#mainWidget {background-color : rgb(20, 20 ,20)}
                 
-                QWidget#stageArea {background-color : rgb(20, 20, 20);
+                QWidget#stageArea {background-color : rgb(30, 30, 30);
                                     border : none}
                 
                 QScrollArea#mainScrollArea {border : none}
@@ -119,6 +119,43 @@ dark_style_sheet = """
                                                                 
                 QListWidgetItem {background-color : rgb(50, 50, 50)}
                 
+                QScrollBar:vertical, QScrollBar:horizontal {background-color : rgb(20, 20 ,20);
+                                                max-width : 10px;
+                                                border-radius : 5px}
+                QScrollBar::handle:vertical {background-color : rgb(50, 50 ,50);
+                                                border-radius : 5px;
+                                                margin-top : 0px;
+                                                margin-bottom : 0px}
+                                                
+                QScrollBar::handle:horizontal {background-color : rgb(50, 50 ,50);
+                                                border-radius : 5px;
+                                                margin-left : 0px;
+                                                margin-right : 0px}
+                                                
+                QScrollBar::handle:vertical:hover {background-color : rgb(0, 120, 240)}
+                
+                QScrollBar::handle:horizontal:hover {background-color  :rgb(0, 120, 240)}
+                
+                QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal 
+                                                        {background : none;
+                                                        border : none}
+                                                        
+                QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {background : none;
+                                                        border : none}
+                
+                QScrollBar::up-arrow:vertical , QScrollBar::down-arrow:vertical
+                                                {background : none;
+                                                border : none}
+                                                
+                QScrollBar::right-arrow:horizontal , QScrollBar::left-arrow:horizontal
+                                                {background : none;
+                                                border : none}
+                                                
+                QListView {margin-right : 0px;
+                            margin-left : 0px;
+                            margin-top : 0px;
+                            margin-bottom : 0px;}
+                
                 
                 """
 
@@ -190,12 +227,15 @@ dark_style_sheet_for_widgets = """
 dark_style_sheet_for_Collection = """
                                     QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
                                                                     border : 1px solid rgb(240, 50, 6);
+                                                                    border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
                                     QWidget#collectionBaseWidget:hover {background-color : rgb(30, 30, 30)}
                                                                     
                                     QLabel#collectionDescriptionLabel {color : rgb(70, 70, 70);
                                                                         alignment : center}
+                                                                        
+                                    
                                                                         
                                     QLabel#collectionTitleLabel {color : rgb(200, 200, 200)}
                                     
@@ -217,8 +257,11 @@ dark_style_sheet_for_Collection = """
                                                                         border-radius : 10px;}
                                                                         
                                     QWidget#bookBaseWidget {background-color : rgb(0, 0, 10);
-                                                            border : 1px solid rgb(240, 60, 6);
-                                                            border-radius : 10px;
+                                                            border-left : 5px solid rgb(240, 60, 6);
+                                                            border-top-right-radius : 20px;
+                                                            border-bottom-right-radius : 20px;
+                                                            border-top-left-radius : 0px;
+                                                            border-bottom-left-radius : 0px;
                                                             color : white}
                                                             
                                     QLabel#bookTitleLabel {background : none;
@@ -229,17 +272,31 @@ dark_style_sheet_for_Collection = """
                                     QPushButton#bookFavoriteButton:!checked {background : none;
                                                                         min-width : 20px;
                                                                         min-height : 20px;
-                                                                        max-width : 20px;
-                                                                        max-height : 20px;
-                                                                        border : 1px solid white;
+                                                                        max-width : 30px;
+                                                                        max-height : 30px;
+                                                                        border : none;
                                                                         border-radius : 10px;}
                                                                         
-                                    QPushButton#bookFavoriteButton:checked {background : white;
+                                    QPushButton#bookFavoriteButton:checked {background : none;
                                                                         min-width : 20px;
                                                                         min-height : 20px;
-                                                                        max-width : 20px;
-                                                                        max-height : 20px;
-                                                                        border : 1px solid white;
+                                                                        max-width : 30px;
+                                                                        max-height : 30px;
+                                                                        border : none;
                                                                         border-radius : 10px;}
                                     
                                     """
+
+status_style_sheet_dark = """
+                        
+                        QLabel#sepLabel {background-color : rgb(100, 100, 100);
+                                        max-height : 2px;
+                                        min-height : 2px;
+                                        border : none;
+                                        }
+                                        
+                        QLabel  {font-size : 16px;
+                                font-family : Hack;
+                                            color : rgb(200, 200, 200)}
+                        
+                        """
