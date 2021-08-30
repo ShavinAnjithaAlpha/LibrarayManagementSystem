@@ -10,19 +10,21 @@ dark_style_sheet = """
                 
                 QTabBar::tab {background-color : rgb(240, 0 ,0);
                                                 border : none;
-                                                padding : 10px;
+                                                padding : 13px;
                                                 color : black;
                                                 border-right : 1px solid black;
                                                 font-size : 15px;
-                                                width : 80px}
+                                                width : 93px}
                 QTabBar::tab:selected {background-color : rgb(240, 50, 5);
                                     color : black}
                                     
                 QTabWidget#reminderTab::pane {border : 1px solid rgb(50, 50, 50);
-                                        border-radius : 5px;}
+                                        border-radius : 5px;
+                                        margin : 0px;}
                                                 
                 QWidget#statusWidget {background-color : rgb(0 ,0, 0);
-                                    border : none}
+                                    border : none;
+                                    margin : 0px;}
                 
                 QWidget#barWidget {background-color : rgb(25, 25, 25);
                                     border : none;}
@@ -34,7 +36,8 @@ dark_style_sheet = """
                 QWidget#toolBarWidget {border-bottom : 1px solid rgb(0, 0, 30);
                                         background-color : rgb(25, 25, 25)}
                                     
-                QWidget#reminderWidget {background-color : rgb(0, 0, 10)}
+                QWidget#reminderWidget {background-color : rgb(0, 0, 10);
+                                        margin : 0px;}
                                         
                 QLabel#title_label {color : rgb(0, 50, 200);
                                     background : none;}
@@ -246,14 +249,22 @@ dark_style_sheet_for_widgets = """
                                 """
 
 dark_style_sheet_for_Collection = """
+
+                                    QWidget#collectionBaseWidget[isSelected = 'true'] {background-color : rgb(200, 10, 10);
+                                                                    border : 1px solid rgb(240, 50, 6);
+                                                                    border-left : 8px solid rgb(0, 240, 66);
+                                                                    border-radius : 5px;}
+                                    
                                     QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
                                                                     border : 1px solid rgb(240, 50, 6);
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
+                                   
+                                                                    
                                     QWidget#collectionBaseWidget:hover {background-color : rgb(30, 30, 30)}
                                                                     
-                                    QLabel#collectionDescriptionLabel {color : rgb(70, 70, 70);
+                                    QLabel#collectionDescriptionLabel {color : rgb(150, 150, 150);
                                                                         alignment : center}
                                                                         
                                     
@@ -305,19 +316,50 @@ dark_style_sheet_for_Collection = """
                                                                         max-height : 30px;
                                                                         border : none;
                                                                         border-radius : 10px;}
+                                                                        
+                                    QPushButton#menuButton {max-width : 50px;
+                                                            border : none}
+                                                            
+                                    QPushButton::menu-indicator {background : orange;
+                                                                border-radius : 5px;
+                                                                border : 1px solid  orange}
+                                    QPushButton::menu-indicator:hover {background : red;
+                                                                border-radius : 5px;
+                                                                border : 1px solid  red}
+                                    
+                                    
                                     
                                     """
 
 status_style_sheet_dark = """
                         
-                        QLabel#sepLabel {background-color : rgb(100, 100, 100);
+                        QLabel#sepLabel {background-color : rgb(150, 150, 150);
                                         max-height : 2px;
                                         min-height : 2px;
                                         border : none;
                                         }
                                         
-                        QLabel  {font-size : 16px;
-                                font-family : Hack;
-                                            color : rgb(200, 200, 200)}
+                        QLabel#dataLabel  {font-size : 15px;
+                                            font-family : Hack;
+                                            color : rgb(0, 100, 240);
+                                            alignment : right}
+                                            
+                        QLabel#titleLabel {font-size : 17px;
+                                            color : white;
+                                            alignment : left}
+                                            
+                        QLabel {font-size : 16px;
+                                alignment : left}
                         
                         """
+
+
+root_collection_dark_style_sheet = """
+                                    QLabel#titleLabel {color : rgb(0, 150, 200);
+                                                        font-size : 20px;
+                                                        margin : 0px;}
+                                                        
+                                    QLabel#descriptionLabel {font-size : 16px;}
+                                    
+                                    
+                                    """

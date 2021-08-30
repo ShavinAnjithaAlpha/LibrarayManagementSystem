@@ -5,9 +5,9 @@ import sys, random
 from style_sheet import dark_style_sheet
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
-                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QTabBar, QListView)
+                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QListView)
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
-from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
+from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, rootCollectionWidget ,StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
 # Press Shift+F10 to execute it or replace it with your code.
@@ -155,12 +155,12 @@ class LibraryMangementSystem(QMainWindow):
     def initializeUI(self):
 
         # set the windwo width and height
-        self.width = 2000
-        self.height = 1000
-
+        self.width = self.screen().size().width()
+        self.height = self.screen().size().height()
         # first consider about the
         self.setWindowTitle("Library Management System v0.0.1")
         self.setGeometry(0, 0, self.width, self.height)
+        # self.showFullScreen()
 
         # create the mai widgets
         self.setUpWidgets()
@@ -224,7 +224,7 @@ class LibraryMangementSystem(QMainWindow):
         self.stageWidget.setObjectName("stageWidget")
 
         self.reminderWidget = QWidget()
-        self.reminderWidget.setFixedWidth(int(self.width * 0.15))
+        self.reminderWidget.setMaximumWidth(int(self.width * 0.15))
         self.reminderWidget.setObjectName("reminderWidget")
 
         # create the other h box for pack them
@@ -387,7 +387,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the radio buttons
         searchOptions = ["Only Books", "Only Collections", "Both of them", "From Everything"]
-        searchOptionRadioButtons = []
+        self.searchOptionRadioButtons = []
         # create the v box layout
         h_box_radios = QHBoxLayout()
         for item in searchOptions:
@@ -397,7 +397,7 @@ class LibraryMangementSystem(QMainWindow):
             # add to the layout
             h_box_radios.addWidget(radio_new)
             # add to teh list
-            searchOptionRadioButtons.append(radio_new)
+            self.searchOptionRadioButtons.append(radio_new)
 
         # set the layout ot the group box
         group_box.setLayout(h_box_radios)
@@ -413,7 +413,17 @@ class LibraryMangementSystem(QMainWindow):
         # create the theme box
         self.themeBox = switchButton("list theme" , "box theme", "list", "box")
         self.themeBox.switchSignal.connect(self.refreshPage)
-        grid_lyt.addWidget(self.themeBox, 0, 0)
+
+        # create the combo box for sorting options
+        self.sortingBox = QComboBox()
+        self.sortingBox.addItems(["A to Z", "Z to A", "Oldest to Latest", "Latest to Oldest", "Size"])
+        self.sortingBox.setObjectName("sortingComboBox")
+
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(self.themeBox)
+        hbox2.addWidget(self.sortingBox)
+
+        grid_lyt.addLayout(hbox2, 0, 0)
 
         # create the refresh button
         refreshButton = QPushButton()
@@ -448,6 +458,8 @@ class LibraryMangementSystem(QMainWindow):
         buttonHBox.addStretch()
         # add to the grid
         grid_lyt.addLayout(buttonHBox, 1, 0, 1, 2)
+
+
 
 
         # set the toolBar widget ;layout as the grid_lyt
@@ -513,17 +525,38 @@ class LibraryMangementSystem(QMainWindow):
         self.showButton.hide()
         self.showButton.pressed.connect(self.showStatusPanel)
 
-        # create the hbox for buttons
+        rootLabel = QLabel("Root")
+        rootLabel.setFont(QFont("verdana", 15))
+
+        # create the h box for buttons
         hbox = QHBoxLayout()
+        hbox.addStretch()
         hbox.addWidget(self.hideButton)
         hbox.addWidget(self.showButton)
-        hbox.addStretch()
+
 
         # create the vbox for tab
+        self.reminderLyt = QVBoxLayout()
+        self.reminderLyt.addLayout(hbox)
+        self.reminderLyt.addWidget(self.reminderTab)
+        self.reminderLyt.addWidget(rootLabel)
+
+        # create the scroll area
+        scroll_area_for_reminder = QScrollArea()
+        scroll_area_for_reminder.setWidgetResizable(True)
+        scroll_area_for_reminder.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area_for_reminder.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area_for_reminder.setMaximumWidth(self.reminderWidget.width())
+
+        # create the another  widget
+        anotherWidget = QWidget()
+        anotherWidget.setLayout(self.reminderLyt)
+        scroll_area_for_reminder.setWidget(anotherWidget)
+
         vbox = QVBoxLayout()
-        vbox.addLayout(hbox)
-        vbox.addWidget(self.reminderTab)
-        vbox.addStretch()
+        vbox.addWidget(scroll_area_for_reminder)
+        vbox.addSpacing(50)
+
         self.reminderWidget.setLayout(vbox)
 
         self.setUpStatusWidget()
@@ -531,10 +564,10 @@ class LibraryMangementSystem(QMainWindow):
     def hideStatusPanel(self):
 
         # create the animation to hide the panel
-        self.hideAnimation = QPropertyAnimation(self.reminderWidget, b"fixedWidth")
+        self.hideAnimation = QPropertyAnimation(self.reminderWidget, b"maximumWidth")
         self.hideAnimation.setStartValue(self.reminderWidget.width())
-        self.hideAnimation.setEndValue(int(self.width * 0.1))
-        self.hideAnimation.setDuration(1000)
+        self.hideAnimation.setEndValue(int(self.width * 0.05))
+        self.hideAnimation.setDuration(500)
         self.hideAnimation.start()
 
         self.showButton.show()
@@ -543,10 +576,10 @@ class LibraryMangementSystem(QMainWindow):
     def showStatusPanel(self):
 
         # create the animation to hide the panel
-        self.showAnimation = QPropertyAnimation(self.reminderWidget, b"fixedWidth")
+        self.showAnimation = QPropertyAnimation(self.reminderWidget, b"maximumWidth")
         self.showAnimation.setStartValue(self.reminderWidget.width())
         self.showAnimation.setEndValue(int(self.width * 0.15))
-        self.showAnimation.setDuration(1000)
+        self.showAnimation.setDuration(500)
         self.showAnimation.start()
 
         self.showButton.hide()
@@ -559,10 +592,11 @@ class LibraryMangementSystem(QMainWindow):
         self.statusBox = StatusWidget()
 
         # create the layout and pack to them
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.statusBox)
+        self.status_vbox = QVBoxLayout()
+        self.status_vbox.addWidget(self.statusBox)
 
-        self.statusWidget.setLayout(vbox)
+
+        self.statusWidget.setLayout(self.status_vbox)
 
     def addNewItem(self):
 
@@ -594,18 +628,44 @@ class LibraryMangementSystem(QMainWindow):
 
     def searchThings(self, text : str):
 
-        # search the items
-        for widget in self.currentStage.collectionWidgets:
-            if text.lower() in widget.title.lower():
-                widget.show()
-            else:
+        # add the search criterias
+
+        if self.searchOptionRadioButtons[0].isChecked():
+            # hide the all of collections
+            for widget in self.currentStage.collectionWidgets:
                 widget.hide()
 
-        for widget in self.currentStage.bookWidgets:
-            if text.lower() in widget.title.lower():
-                widget.show()
-            else:
+            for widget in self.currentStage.bookWidgets:
+                if text.lower() in widget.title.lower():
+                    widget.show()
+                else:
+                    widget.hide()
+
+        elif self.searchOptionRadioButtons[1].isChecked():
+            # hide the all of collections
+            for widget in self.currentStage.bookWidgets:
                 widget.hide()
+
+            for widget in self.currentStage.collectionWidgets:
+                if text.lower() in widget.title.lower():
+                    widget.show()
+                else:
+                    widget.hide()
+
+        else:
+
+            # search the items
+            for widget in self.currentStage.collectionWidgets:
+                if text.lower() in widget.title.lower():
+                    widget.show()
+                else:
+                    widget.hide()
+
+            for widget in self.currentStage.bookWidgets:
+                if text.lower() in widget.title.lower():
+                    widget.show()
+                else:
+                    widget.hide()
 
     def responeOfSelectDialog(self, text):
 
@@ -765,6 +825,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # update the tracking informations
         self.saveCollectionTrackings(id)
+        # set the root collection widget informations
+        try:
+            self.rootCollectionBox.deleteLater()
+        except:
+            pass
+        self.rootCollectionBox = rootCollectionWidget(id)
+        self.reminderLyt.addWidget(self.rootCollectionBox)
 
     def refreshPage(self):
 
@@ -951,9 +1018,13 @@ class LibraryMangementSystem(QMainWindow):
 
     def setSelectionWidget(self, widget):
 
+        if self.currentStage.selected_widget:
+            self.currentStage.selected_widget.isSelected = 'false'
         # set thr stage selected widget as the this
         if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
             self.currentStage.selected_widget = widget
+            # set the selected id to True
+            widget.isSelected = 'true'
             # update the status
             self.setCollectionStatus()
 
@@ -991,7 +1062,13 @@ class LibraryMangementSystem(QMainWindow):
                 "time" : data[5]}
 
         # first cleat the status box
-        self.statusBox.clearBox()
+        try:
+            self.statusBox.deleteLater()
+        except:
+            pass
+        # create the new status box
+        self.statusBox = StatusWidget()
+        self.status_vbox.addWidget(self.statusBox)
         # fill the status box
         self.statusBox.addLine("Title : ", widget_data["title"], wrap = True)
         self.statusBox.addLine("Description : ", widget_data["des"], wrap=True)

@@ -1,12 +1,6 @@
 [
     {
         "type": "collection",
-        "id": "p2qf2",
-        "title": "Physics",
-        "path": "/0/"
-    },
-    {
-        "type": "collection",
         "id": "fqcl3",
         "title": "Chemistry",
         "path": "/1/"
@@ -28,12 +22,6 @@
         "id": "rprzc",
         "title": "Languages",
         "path": "/3/"
-    },
-    {
-        "type": "book",
-        "id": "d1azf",
-        "title": "thermal conduction.pdf",
-        "path": "/0/"
     },
     {
         "type": "book",
@@ -88,5 +76,11 @@
         "id": "2uuyw",
         "title": "Quantum mechanics. The theoretical minimum by Leonard Susskind, Art Friedman (z-lib.org).pdf",
         "path": "/0/3/"
+    },
+    {
+        "type": "collection",
+        "id": "p2qf2",
+        "title": "Physics",
+        "path": "/0/"
     }
 ]

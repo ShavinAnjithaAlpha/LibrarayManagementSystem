@@ -3,7 +3,7 @@ import shutil
 import sqlite3
 import os
 
-from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark
+from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark, root_collection_dark_style_sheet
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout, QMenu,
                              QAction, QInputDialog, QFileDialog)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex
@@ -175,6 +175,9 @@ class collectionWidget(QWidget):
         self.image_dir = image_dir
         self.path = path
         self.collection_id = id
+
+        # variable for identify the this is selected widget
+        self.isSelected = 'false'
 
         # create the container base widget
         self.baseWidget = QWidget(self)
@@ -374,7 +377,7 @@ class boxCollectionWidget(collectionWidget):
         self.gridLyt.addWidget(self.titleLabel, 0, 0, 1, 2)
         self.gridLyt.addWidget(self.imageLabel, 1, 0, 1, 1)
         self.gridLyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
-        self.gridLyt.addWidget(self.addFavoriteButton, 0, 2)
+        self.gridLyt.addWidget(self.addFavoriteButton, 0, 3)
         self.gridLyt.addWidget(self.menuButton, 0, 2)
 
         self.baseWidget.setLayout(self.gridLyt)
@@ -397,7 +400,7 @@ class listCollectionWidget(collectionWidget):
         self.grid_lyt.addWidget(self.titleLabel, 0, 1, 1, 1)
         self.grid_lyt.addWidget(self.imageLabel, 0, 0, 2, 1)
         self.grid_lyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
-        self.grid_lyt.addWidget(self.addFavoriteButton, 0, 2)
+        self.grid_lyt.addWidget(self.addFavoriteButton, 0, 3)
         self.grid_lyt.addWidget(self.menuButton, 0, 2)
 
 
@@ -527,9 +530,9 @@ class favoriteListModel(QAbstractListModel):
             widget_type = self.todos[index.row()]["type"]
 
             if widget_type == "collection":
-                return QFont("verdana", 12)
+                return QFont("verdana", 10)
             else:
-                return QFont("verdana", 11)
+                return QFont("verdana", 9)
 
     def rowCount(self, index):
         return len(self.todos)
@@ -628,19 +631,23 @@ class StatusWidget(QWidget):
         self.form.setFormAlignment(Qt.AlignLeft)
         self.form.setLabelAlignment(Qt.AlignLeft)
         self.form.setObjectName("status_form")
-        self.form.setVerticalSpacing(30)
+        self.form.setVerticalSpacing(15)
 
         self.setStyleSheet(status_style_sheet_dark)
         self.setLayout(self.form)
 
     def addLine(self, title, data, wrap = False):
 
-        # create the new Label
-        label = QLabel(data)
-        if wrap:
-            label.setWordWrap(True)
-        # add the new line for the form
-        self.form.addRow(title, label)
+        # create the title label
+        title_label = QLabel(f"{title} : ")
+        title_label.setObjectName("titleLabel")
+        # create the data label
+        dataLabel = QLabel(data)
+        dataLabel.setWordWrap(wrap)
+        dataLabel.setObjectName("dataLabel")
+
+        self.form.addWidget(title_label)
+        self.form.addWidget(dataLabel)
 
     def addLabel(self, data):
 
@@ -677,6 +684,49 @@ class StatusWidget(QWidget):
         self.form.setObjectName("status_form")
 
         self.setLayout(self.form)
+
+class rootCollectionWidget(QWidget):
+    def __init__(self, collection_id):
+        super(rootCollectionWidget, self).__init__()
+        self.collection_id = collection_id
+        # first fetch the data about the collection from the json file
+        self.fetchData()
+
+        self.setStyleSheet(root_collection_dark_style_sheet)
+
+        self.initializeUI()
+
+    def fetchData(self):
+
+        user_data = {}
+        with open("db/collection.json") as file:
+            user_data = json.load(file)
+
+        self.data = user_data.get(self.collection_id)
+
+    def initializeUI(self):
+
+        # create the cover image label
+        self.coverImageLabel = QLabel()
+        self.coverImageLabel.setFixedSize(QSize(100, 80))
+        self.coverImageLabel.setPixmap(QPixmap(self.data["image_dir"]).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+        # create the title label
+        self.titleLabel = QLabel(self.data["title"])
+        self.titleLabel.setObjectName("titleLabel")
+
+        # create the description label
+        self.descriptionLabel = QLabel(self.data["description"])
+        self.descriptionLabel.setWordWrap(True)
+        self.descriptionLabel.setObjectName("descriptionLabel")
+
+        # create the v box for pack the widgets
+        vBox = QVBoxLayout()
+        vBox.addWidget(self.coverImageLabel, alignment=Qt.AlignLeft)
+        vBox.addWidget(self.titleLabel, alignment=Qt.AlignLeft)
+        vBox.addWidget(self.descriptionLabel, alignment=Qt.AlignLeft)
+
+        self.setLayout(vBox)
 
 
 if __name__ == "__main__":
