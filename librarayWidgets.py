@@ -5,7 +5,7 @@ import os
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark, root_collection_dark_style_sheet
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout, QMenu,
-                             QAction, QInputDialog, QFileDialog)
+                             QAction, QInputDialog, QFileDialog, QPlainTextEdit)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex
 from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon
 
@@ -631,7 +631,10 @@ class StatusWidget(QWidget):
         self.form.setFormAlignment(Qt.AlignLeft)
         self.form.setLabelAlignment(Qt.AlignLeft)
         self.form.setObjectName("status_form")
-        self.form.setVerticalSpacing(15)
+        self.form.setVerticalSpacing(10)
+
+
+        self.setMaximumHeight(300)
 
         self.setStyleSheet(status_style_sheet_dark)
         self.setLayout(self.form)
@@ -648,6 +651,25 @@ class StatusWidget(QWidget):
 
         self.form.addWidget(title_label)
         self.form.addWidget(dataLabel)
+
+    def addTextArea(self, title, data):
+
+        # create th text area
+        textArea = QPlainTextEdit()
+        textArea.setPlainText(data)
+        textArea.setReadOnly(True)
+        textArea.setFixedSize(QSize(200, 70))
+        textArea.setFont(QFont('verdana', 9))
+        textArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        textArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        textArea.setContentsMargins(0, 0, 0, 0)
+
+        # title Label
+        titleLabel = QLabel(f"{title} : ")
+        titleLabel.setObjectName("titleLabel")
+
+        self.form.addWidget(titleLabel)
+        self.form.addWidget(textArea)
 
     def addLabel(self, data):
 
@@ -704,7 +726,23 @@ class rootCollectionWidget(QWidget):
 
         self.data = user_data.get(self.collection_id)
 
+        # create the connection
+        connection = sqlite3.connect("db/data.db")
+        cursor = connection.cursor()
+
+        cursor.execute(f" SELECT date, time FROM collection_table WHERE collection_id = '{self.collection_id}' ")
+        data = cursor.fetchall()
+
+        connection.close()
+
+        self.date = data[0][0]
+        self.time = data[0][1]
+
     def initializeUI(self):
+
+        # create the root label
+        rootLabel = QLabel("Root")
+        rootLabel.setFont(QFont("verdana", 17))
 
         # create the cover image label
         self.coverImageLabel = QLabel()
@@ -716,15 +754,24 @@ class rootCollectionWidget(QWidget):
         self.titleLabel.setObjectName("titleLabel")
 
         # create the description label
-        self.descriptionLabel = QLabel(self.data["description"])
-        self.descriptionLabel.setWordWrap(True)
-        self.descriptionLabel.setObjectName("descriptionLabel")
+        self.descriptionLabel = QPlainTextEdit()
+        self.descriptionLabel.setFont(QFont('verdana', 9))
+        self.descriptionLabel.setFixedSize(QSize(200, 70))
+        self.descriptionLabel.setPlainText(self.data["description"])
+        self.descriptionLabel.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.descriptionLabel.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        # create the date and time label
+        dateTimeLabel = QLabel(f"Created On {self.date}\n at {self.time}")
+        dateTimeLabel.setFont(QFont('verdana' , 9))
 
         # create the v box for pack the widgets
         vBox = QVBoxLayout()
+        vBox.addWidget(rootLabel)
         vBox.addWidget(self.coverImageLabel, alignment=Qt.AlignLeft)
         vBox.addWidget(self.titleLabel, alignment=Qt.AlignLeft)
         vBox.addWidget(self.descriptionLabel, alignment=Qt.AlignLeft)
+        vBox.addWidget(dateTimeLabel, alignment=Qt.AlignCenter)
 
         self.setLayout(vBox)
 

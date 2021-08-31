@@ -154,13 +154,12 @@ class LibraryMangementSystem(QMainWindow):
 
     def initializeUI(self):
 
-        # set the windwo width and height
+        # set the window width and height
         self.width = self.screen().size().width()
         self.height = self.screen().size().height()
         # first consider about the
         self.setWindowTitle("Library Management System v0.0.1")
         self.setGeometry(0, 0, self.width, self.height)
-        # self.showFullScreen()
 
         # create the mai widgets
         self.setUpWidgets()
@@ -203,7 +202,7 @@ class LibraryMangementSystem(QMainWindow):
         self.titleBaridget.setObjectName("titleBarWidget")
         # create the tool bar widget
         self.toolBarWidget = QWidget()
-        self.toolBarWidget.setFixedHeight(int(self.height * 0.18))
+        self.toolBarWidget.setMaximumHeight(int(self.height * 0.18))
         self.toolBarWidget.setObjectName("toolBarWidget")
         # create the space widget
         spaceWidget = QWidget()
@@ -306,10 +305,11 @@ class LibraryMangementSystem(QMainWindow):
         # get the data from the model
         data = self.favoriteModel.todos[index.row()]
 
-        # open the new page
-        self.openNewPage(data["path"], data["id"])
-        # clear the selection of the list view
-        self.favoriteListWidget.clearSelection()
+        if data["type"] == "collection":
+            # open the new page
+            self.openNewPage(data["path"], data["id"])
+            # clear the selection of the list view
+            self.favoriteListWidget.clearSelection()
 
     def updateFavoriteModel(self, data : list):
 
@@ -410,6 +410,14 @@ class LibraryMangementSystem(QMainWindow):
         self.addButton.pressed.connect(self.addNewItem)
 
 
+        # create the show and hide buttons
+        self.toolBatHideButton = QPushButton("<")
+        self.toolBatHideButton.pressed.connect(self.hideToolBar)
+
+        self.toolBarShowButton = QPushButton(">")
+        self.toolBarShowButton.pressed.connect(self.showToolBar)
+        self.toolBarShowButton.hide()
+
         # create the theme box
         self.themeBox = switchButton("list theme" , "box theme", "list", "box")
         self.themeBox.switchSignal.connect(self.refreshPage)
@@ -420,6 +428,8 @@ class LibraryMangementSystem(QMainWindow):
         self.sortingBox.setObjectName("sortingComboBox")
 
         hbox2 = QHBoxLayout()
+        hbox2.addWidget(self.toolBatHideButton)
+        hbox2.addWidget(self.toolBarShowButton)
         hbox2.addWidget(self.themeBox)
         hbox2.addWidget(self.sortingBox)
 
@@ -460,10 +470,41 @@ class LibraryMangementSystem(QMainWindow):
         grid_lyt.addLayout(buttonHBox, 1, 0, 1, 2)
 
 
-
+        # create the list for tool bar items
+        self.toolBarItems = [self.searchBar, self.backwardButton, self.forwardButton, refreshButton, searchIcon, group_box,
+                             self.addButton, self.themeBox, self.sortingBox]
 
         # set the toolBar widget ;layout as the grid_lyt
         self.toolBarWidget.setLayout(grid_lyt)
+
+
+    def hideToolBar(self):
+
+        # create the animation for hide the tool bar
+        self.toolBarHidingAnimation = QPropertyAnimation(self.toolBarWidget, b'maximumHeight')
+        self.toolBarHidingAnimation.setStartValue(self.toolBarWidget.height())
+        self.toolBarHidingAnimation.setEndValue(80)
+        self.toolBarHidingAnimation.start()
+
+        self.toolBatHideButton.hide()
+        self.toolBarShowButton.show()
+
+        for widget in self.toolBarItems:
+            widget.hide()
+
+    def showToolBar(self):
+
+        # create the animation for hide the tool bar
+        self.toolBarShowingAnimation = QPropertyAnimation(self.toolBarWidget, b'maximumHeight')
+        self.toolBarShowingAnimation.setStartValue(self.toolBarWidget.height())
+        self.toolBarShowingAnimation.setEndValue(int(self.height * 0.18))
+        self.toolBarShowingAnimation.start()
+
+        self.toolBatHideButton.show()
+        self.toolBarShowButton.hide()
+
+        for widget in self.toolBarItems:
+            widget.show()
 
     def setUpStageWidget(self):
         # create the scroll widget
@@ -525,9 +566,6 @@ class LibraryMangementSystem(QMainWindow):
         self.showButton.hide()
         self.showButton.pressed.connect(self.showStatusPanel)
 
-        rootLabel = QLabel("Root")
-        rootLabel.setFont(QFont("verdana", 15))
-
         # create the h box for buttons
         hbox = QHBoxLayout()
         hbox.addStretch()
@@ -539,7 +577,6 @@ class LibraryMangementSystem(QMainWindow):
         self.reminderLyt = QVBoxLayout()
         self.reminderLyt.addLayout(hbox)
         self.reminderLyt.addWidget(self.reminderTab)
-        self.reminderLyt.addWidget(rootLabel)
 
         # create the scroll area
         scroll_area_for_reminder = QScrollArea()
@@ -557,7 +594,7 @@ class LibraryMangementSystem(QMainWindow):
         vbox.addWidget(scroll_area_for_reminder)
         vbox.addSpacing(50)
 
-        self.reminderWidget.setLayout(vbox)
+        self.reminderWidget.setLayout(self.reminderLyt)
 
         self.setUpStatusWidget()
 
@@ -573,6 +610,13 @@ class LibraryMangementSystem(QMainWindow):
         self.showButton.show()
         self.hideButton.hide()
 
+        try:
+            self.statusWidget.hide()
+            self.rootCollectionBox.hide()
+        except:
+            pass
+
+
     def showStatusPanel(self):
 
         # create the animation to hide the panel
@@ -585,6 +629,12 @@ class LibraryMangementSystem(QMainWindow):
         self.showButton.hide()
         self.hideButton.show()
 
+        try:
+            self.statusWidget.show()
+            self.rootCollectionBox.show()
+        except:
+            pass
+
 
     def setUpStatusWidget(self):
 
@@ -593,8 +643,8 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the layout and pack to them
         self.status_vbox = QVBoxLayout()
-        self.status_vbox.addWidget(self.statusBox)
-
+        self.status_vbox.insertWidget(0, self.statusBox)
+        self.status_vbox.addStretch()
 
         self.statusWidget.setLayout(self.status_vbox)
 
@@ -831,7 +881,7 @@ class LibraryMangementSystem(QMainWindow):
         except:
             pass
         self.rootCollectionBox = rootCollectionWidget(id)
-        self.reminderLyt.addWidget(self.rootCollectionBox)
+        self.status_vbox.insertWidget(1, self.rootCollectionBox)
 
     def refreshPage(self):
 
@@ -1068,10 +1118,10 @@ class LibraryMangementSystem(QMainWindow):
             pass
         # create the new status box
         self.statusBox = StatusWidget()
-        self.status_vbox.addWidget(self.statusBox)
+        self.status_vbox.insertWidget(0, self.statusBox)
         # fill the status box
         self.statusBox.addLine("Title : ", widget_data["title"], wrap = True)
-        self.statusBox.addLine("Description : ", widget_data["des"], wrap=True)
+        self.statusBox.addTextArea("Description : ", widget_data["des"])
         self.statusBox.addSeperator()
         # add the created date and time
         self.statusBox.addLabel(f"Created On\n {widget_data['date']}\nAt {widget_data['time']}")

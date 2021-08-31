@@ -82,5 +82,11 @@
         "id": "p2qf2",
         "title": "Physics",
         "path": "/0/"
+    },
+    {
+        "type": "collection",
+        "id": "kl4fm",
+        "title": "Mxwell Equations",
+        "path": "/0/0/0/"
     }
 ]
