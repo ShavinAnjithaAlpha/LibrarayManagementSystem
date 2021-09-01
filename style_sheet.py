@@ -175,11 +175,28 @@ dark_style_sheet = """
                                         padding : 5px;
                                         font-size : 17px;}
                                         
+                     
+                QInputDialog QLineEdit {border : 1px solid rgb(100, 100, 100);
+                                        border-radius : 5px;
+                                        font-size : 16px;
+                                        color : white;
+                                        padding : 10px;
+                                        min-width : 300px;}
+                                        
                                 
                                          
                 QInputDialog QPushButton:hover {background-color : rgb(240, 60, 6);
                                                 border : none;
                                                 color : black}
+                                                
+                QPushButton#toolBarHideButton {background : none;
+                                                border : none;
+                                                font-size : 17px;
+                                                color : white;}
+                                                
+                QPushButton#toolBarHideButton:hover {color : blue} 
+                
+                QComboBox#sortingComboBox:pane {border-radius : 5px;}
                 
                 """
 
@@ -249,13 +266,43 @@ dark_style_sheet_for_widgets = """
                                 """
 
 dark_style_sheet_for_Collection = """
-
-                                    QWidget#collectionBaseWidget[isSelected = 'true'] {background-color : rgb(200, 10, 10);
+                                    
+                                    QInputDialog QPlainTextEdit {border : 1px solid rgb(100, 100, 100);
+                                        border-radius : 5px;
+                                        font-size : 16px;
+                                        color : white;
+                                        min-width : 700px;
+                                        padding : 10px;
+                                        min-height : 350px;}
+                                        
+                                    QInputDialog QLineEdit {border : 1px solid rgb(100, 100, 100);
+                                        border-radius : 5px;
+                                        font-size : 16px;
+                                        color : white;
+                                        padding : 10px;
+                                        min-width : 300px;}
+                                        
+                                    QInputDialog QLabel {font-size : 18px;}
+                                        
+                                    QInputDialog QPushButton {background : none;
+                                        color: white;
+                                        border : 1px solid rgb(100,100, 100);
+                                        border-radius : 2px;
+                                        padding : 5px;
+                                        font-size : 17px;}
+                                        
+                                
+                                         
+                                    QInputDialog QPushButton:hover {background-color : rgb(240, 60, 6);
+                                                border : none;
+                                                color : black}
+                                    
+                                    QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
                                                                     border : 1px solid rgb(240, 50, 6);
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
-                                    
-                                    QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
+                                                                    
+                                    QWidget#collectionBaseWidgetSelected {background-color : rgb(100, 10, 100);
                                                                     border : 1px solid rgb(240, 50, 6);
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}

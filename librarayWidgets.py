@@ -5,7 +5,7 @@ import os
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark, root_collection_dark_style_sheet
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout, QMenu,
-                             QAction, QInputDialog, QFileDialog, QPlainTextEdit)
+                             QAction, QInputDialog, QFileDialog, QPlainTextEdit, QLineEdit, QMessageBox)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex
 from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon
 
@@ -168,16 +168,14 @@ class collectionWidget(QWidget):
     # defined the new signal for change the favorite widgets of the model
     favoriteSignal = pyqtSignal(list)
 
-    def __init__(self, title, description, image_dir, path, id):
+    def __init__(self, title, description, image_dir, path, pw, id):
         super(collectionWidget, self).__init__()
         self.title = title
         self.description = description
         self.image_dir = image_dir
         self.path = path
         self.collection_id = id
-
-        # variable for identify the this is selected widget
-        self.isSelected = 'false'
+        self.pw = pw
 
         # create the container base widget
         self.baseWidget = QWidget(self)
@@ -241,12 +239,59 @@ class collectionWidget(QWidget):
         self.changeImageAction.triggered.connect(self.changeImage)
         self.changeImageAction.setToolTip("Change the Collection Cover Image you want")
 
+        self.changePasswordAction = QAction("Change Passwod", self)
+        self.changePasswordAction.setToolTip("Chnange the collection passowrd or enter the new password")
+        self.changePasswordAction.triggered.connect(self.changePassword)
+
         # add to the menu
         self.menu.addAction(self.changeTitleAction)
         self.menu.addAction(self.changeDesAction)
         self.menu.addAction(self.changeImageAction)
+        self.menu.addAction(self.changePasswordAction)
 
         self.menuButton.setMenu(self.menu)
+
+    def changePassword(self):
+
+        check = False
+        subCheck = False
+        # get the new password from the text box
+        if self.pw != "":
+            # reconfirm the password
+            pw , ok = QInputDialog.getText(self, "Password Prompt", "Enter the Password : ", echo=QLineEdit.Password)
+            if ok and pw == self.pw:
+                subCheck = True
+            else:
+                QMessageBox.warning(self, "Warning", "Password You Entered is Wrong! Plaese Enter Correct Password")
+
+        else:
+            subCheck = True
+
+        # get the new pw from the user
+        if subCheck:
+            # get the new pw from the user
+            new_pw, ok2 = QInputDialog.getText(self, "New Password Dialog", "Enter the New Password : ", echo=QLineEdit.Password)
+            if ok2:
+                # confirm the password from the user
+                confirm_pw, ok3 = QInputDialog.getText(self, "Confirm Password Dialog", "Confirm the Password : ", echo=QLineEdit.Password)
+                if ok3 and confirm_pw == new_pw:
+                    check = True
+                else:
+                    QMessageBox.warning(self, "Warning", "Confirm Password is not correct...Please Enter the Correct Password")
+
+
+        if check:
+            # change the password from the data base and current widget
+            self.pw = new_pw
+            # create the connection to the data base
+            connection = sqlite3.connect("db/data.db")
+            cursor = connection.cursor()
+
+            cursor.execute(
+                f" UPDATE collection_table SET pw = '{self.pw}' WHERE collection_id = '{self.collection_id}'  ")
+            # save the changes
+            connection.commit()
+            connection.close()
 
     def changeImage(self):
 
@@ -270,10 +315,48 @@ class collectionWidget(QWidget):
 
             # change the image
             self.imageLabel.setPixmap(QPixmap(new_path).scaled(self.imageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+            self.image_dir = new_path
 
     def changeTitle(self):
 
-        pass
+        text, ok = QInputDialog.getText(self, "Title Changed Dialog", "Enter the new title : ")
+
+        if ok:
+            # change the data base file title
+            user_data = {}
+            with open("db/collection.json") as file:
+                user_data = json.load(file)
+
+            user_data.get(self.collection_id)['title'] = text
+            with open("db/collection.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+
+            # change the favorites json file
+            with open("db/favorite.json") as file:
+                user_data = json.load(file)
+
+            for item in user_data:
+                if item["id"] == self.collection_id and item['type'] == "collection":
+                    item["title"] = text
+
+            with open("db/favorite.json", "w") as file:
+                json.dump(user_data, file, indent=4)
+            # end of the update the json files
+
+
+            # update the database file
+            connection = sqlite3.connect("db/data.db")
+            cursor = connection.cursor()
+
+            cursor.execute(f"UPDATE collection_table SET name = '{text}' WHERE collection_id = '{self.collection_id}'  ")
+            connection.commit()
+
+            # close the connection
+            connection.close()
+
+            # change the widget title
+            self.titleLabel.setText(text)
+            self.title = text
 
     def changeDescription(self):
 
@@ -293,6 +376,7 @@ class collectionWidget(QWidget):
 
             # change hte curren widget description
             self.descriptionLabel.setText(text)
+            self.description = text
 
     def setIcon(self):
 
@@ -360,8 +444,8 @@ class collectionWidget(QWidget):
         self.setIcon()
 
 class boxCollectionWidget(collectionWidget):
-    def __init__(self, title, description, image_dir, path, id):
-        super(boxCollectionWidget, self).__init__(title, description, image_dir, path, id)
+    def __init__(self, title, description, image_dir, path, pw ,id):
+        super(boxCollectionWidget, self).__init__(title, description, image_dir, path, pw, id)
         self.initializeUI()
 
     def initializeUI(self):
@@ -384,8 +468,8 @@ class boxCollectionWidget(collectionWidget):
 
 
 class listCollectionWidget(collectionWidget):
-    def __init__(self, title, description, image_dir, path, id):
-        super(listCollectionWidget, self).__init__(title, description, image_dir, path, id)
+    def __init__(self, title, description, image_dir, path, pw, id):
+        super(listCollectionWidget, self).__init__(title, description, image_dir, path, pw, id)
         self.initializeUI()
 
     def initializeUI(self):

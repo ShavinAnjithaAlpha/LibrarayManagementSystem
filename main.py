@@ -2,10 +2,10 @@
 import json
 import os, sqlite3
 import sys, random
-from style_sheet import dark_style_sheet
+from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
-                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QListView)
+                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
 from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, rootCollectionWidget ,StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
@@ -241,6 +241,43 @@ class LibraryMangementSystem(QMainWindow):
         self.setUpStageWidget()
         self.setUpRemiderWidget()
 
+        # create the menu bar
+        self.menuBar = QMenuBar()
+        self.setMenuBar(self.menuBar)
+
+        self.setUpMenu()
+
+    def setUpMenu(self):
+
+        # create the menu foro file
+        self.fileMenu = QMenu("File")
+        self.menuBar.addMenu(self.fileMenu)
+
+        # create the actions for file menu
+        self.exitAction = QAction("Exit")
+        self.exitAction.setShortcut("Alt + F4")
+        self.exitAction.setStatusTip("Quit the Application")
+        self.exitAction.triggered.connect(self.close)
+
+        # create the reset option
+        self.resetAction = QAction("Reset System")
+        self.resetAction.setShortcut("Shift + D")
+        self.resetAction.setStatusTip("Reset the Entire System")
+        self.resetAction.triggered.connect(self.resetSystem)
+
+        # add to the file menu
+        self.fileMenu.addAction(self.resetAction)
+        self.fileMenu.addAction(self.exitAction)
+
+    def resetSystem(self):
+
+        # delete the all of the system files
+        # clear the current stage widget and favorites and recent bars
+        message = QMessageBox.warning(self, "Reset Warning", "Do you want to Reset System. It Will be remove the all of the data basese and other files form the system", QMessageBox.StandardButton.Ok|QMessageBox.StandardButton.Cancel)
+
+        if message == QMessageBox.StandardButton.Ok:
+            pass
+
     def setUpTitleBarWidget(self):
 
         # crate the title label
@@ -411,12 +448,14 @@ class LibraryMangementSystem(QMainWindow):
 
 
         # create the show and hide buttons
-        self.toolBatHideButton = QPushButton("<")
-        self.toolBatHideButton.pressed.connect(self.hideToolBar)
+        self.toolBarHideButton = QPushButton("<")
+        self.toolBarHideButton.pressed.connect(self.hideToolBar)
+        self.toolBarHideButton.setObjectName("toolBarHideButton")
 
         self.toolBarShowButton = QPushButton(">")
         self.toolBarShowButton.pressed.connect(self.showToolBar)
         self.toolBarShowButton.hide()
+        self.toolBarShowButton.setObjectName("toolBarHideButton")
 
         # create the theme box
         self.themeBox = switchButton("list theme" , "box theme", "list", "box")
@@ -426,9 +465,10 @@ class LibraryMangementSystem(QMainWindow):
         self.sortingBox = QComboBox()
         self.sortingBox.addItems(["A to Z", "Z to A", "Oldest to Latest", "Latest to Oldest", "Size"])
         self.sortingBox.setObjectName("sortingComboBox")
+        self.sortingBox.currentIndexChanged.connect(self.sortWidgets)
 
         hbox2 = QHBoxLayout()
-        hbox2.addWidget(self.toolBatHideButton)
+        hbox2.addWidget(self.toolBarHideButton)
         hbox2.addWidget(self.toolBarShowButton)
         hbox2.addWidget(self.themeBox)
         hbox2.addWidget(self.sortingBox)
@@ -482,11 +522,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the animation for hide the tool bar
         self.toolBarHidingAnimation = QPropertyAnimation(self.toolBarWidget, b'maximumHeight')
+        #self.toolBarHidingAnimation.setEasingCurve(QEasingCurve.OutCubic)
+        self.toolBarHidingAnimation.setDuration(1000)
         self.toolBarHidingAnimation.setStartValue(self.toolBarWidget.height())
         self.toolBarHidingAnimation.setEndValue(80)
         self.toolBarHidingAnimation.start()
 
-        self.toolBatHideButton.hide()
+        self.toolBarHideButton.hide()
         self.toolBarShowButton.show()
 
         for widget in self.toolBarItems:
@@ -496,11 +538,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the animation for hide the tool bar
         self.toolBarShowingAnimation = QPropertyAnimation(self.toolBarWidget, b'maximumHeight')
+        self.toolBarShowingAnimation.setEasingCurve(QEasingCurve.OutCubic)
+        self.toolBarShowingAnimation.setDuration(1000)
         self.toolBarShowingAnimation.setStartValue(self.toolBarWidget.height())
         self.toolBarShowingAnimation.setEndValue(int(self.height * 0.18))
         self.toolBarShowingAnimation.start()
 
-        self.toolBatHideButton.show()
+        self.toolBarHideButton.show()
         self.toolBarShowButton.hide()
 
         for widget in self.toolBarItems:
@@ -613,6 +657,7 @@ class LibraryMangementSystem(QMainWindow):
         try:
             self.statusWidget.hide()
             self.rootCollectionBox.hide()
+            self.reminderTab.hide()
         except:
             pass
 
@@ -632,6 +677,7 @@ class LibraryMangementSystem(QMainWindow):
         try:
             self.statusWidget.show()
             self.rootCollectionBox.show()
+            self.reminderTab.show()
         except:
             pass
 
@@ -826,9 +872,9 @@ class LibraryMangementSystem(QMainWindow):
 
         # now create the new widget
         if self.getTheme() == "list":
-            collection_widget = listCollectionWidget(title, des, img, path, id_code)
+            collection_widget = listCollectionWidget(title, des, img, path, "" ,id_code)
         else:
-            collection_widget = boxCollectionWidget(title, des, img, path, id_code)
+            collection_widget = boxCollectionWidget(title, des, img, path, "" , id_code)
 
         info_data = {"title": title,
                      "description": des,
@@ -840,7 +886,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # set the event handler
         collection_widget.mouseDoubleClickEvent = (lambda a, e = collection_widget.path,
-                                                          i = collection_widget.collection_id : self.openNewPage(e, i))
+                                                          i = collection_widget.collection_id , p = collection_widget.pw : self.openNewPage(e, i, p))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
         collection_widget.favoriteSignal.connect(self.updateFavoriteModel)
 
@@ -854,12 +900,50 @@ class LibraryMangementSystem(QMainWindow):
             count = self.currentStage.WidgetCount() - 1
             self.stageLayout.addWidget(collection_widget, count//4, count%4)
 
-    def openNewPage(self, newPath : str, id : str):
+    def openNewPage(self, newPath : str, id : str, pw : str = ""):
 
-        # set the new path as the newPath
-        self.currentPath = newPath
+        if pw != "":
+            pw_text, ok = QInputDialog.getText(self, "Password Dialog", "Enter the Password : ", echo=QLineEdit.Password)
+            if ok and pw_text == pw:
+                check = True
+            else:
+                check = False
+                QMessageBox.warning(self, "Warning", "Password Incorrect! Please Try Again!")
+        else:
+            check = True
+
+        if check:
+            # set the new path as the newPath
+            self.currentPath = newPath
+            # delete the all of widgets
+            for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+                widget.deleteLater()
+
+            # clear the stage
+            self.currentStage.clear()
+            # add the new path to the stage history
+            self.currentStage.addPath(self.currentPath)
+
+            # render the new page
+            self.renderNewPageForCollection(self.currentPath)
+            self.renderNewPageForBook(self.currentPath)
+            # set the back and forward settings
+            self.setBackForwardState()
+
+            # update the tracking informations
+            self.saveCollectionTrackings(id)
+            # set the root collection widget informations
+            try:
+                self.rootCollectionBox.deleteLater()
+            except:
+                pass
+            self.rootCollectionBox = rootCollectionWidget(id)
+            self.status_vbox.insertWidget(1, self.rootCollectionBox)
+
+    def sortWidgets(self):
+
         # delete the all of widgets
-        for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+        for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
             widget.deleteLater()
 
         # clear the stage
@@ -870,18 +954,7 @@ class LibraryMangementSystem(QMainWindow):
         # render the new page
         self.renderNewPageForCollection(self.currentPath)
         self.renderNewPageForBook(self.currentPath)
-        # set the back and forward settings
-        self.setBackForwardState()
 
-        # update the tracking informations
-        self.saveCollectionTrackings(id)
-        # set the root collection widget informations
-        try:
-            self.rootCollectionBox.deleteLater()
-        except:
-            pass
-        self.rootCollectionBox = rootCollectionWidget(id)
-        self.status_vbox.insertWidget(1, self.rootCollectionBox)
 
     def refreshPage(self):
 
@@ -975,8 +1048,11 @@ class LibraryMangementSystem(QMainWindow):
                             "image_dir" : coll_data.get(data[i][1])["image_dir"],
                             "date" : data[i][4],
                             "time" : data[i][5],
-                            "id" : data[i][1]}
+                            "id" : data[i][1],
+                            "pw" : data[i][6]}
                 filter_data.append(new_dict)
+
+        filter_data = self.sortCollection(filter_data)
 
         self.addCollectionWidgets(filter_data)
 
@@ -1033,14 +1109,14 @@ class LibraryMangementSystem(QMainWindow):
         for data in FilterData:
             # create the new widget
             if self.getTheme() == "list":
-                widget = listCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["id"])
+                widget = listCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["pw"] ,data["id"])
                 self.stageLayout.addWidget(widget)
             else:
-                widget = boxCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["id"])
+                widget = boxCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["pw"] ,data["id"])
                 count = self.currentStage.WidgetCount()
                 self.stageLayout.addWidget(widget, (count) // 4, (count) % 4)
 
-            widget.mouseDoubleClickEvent = (lambda a, e = widget.path, i = widget.collection_id : self.openNewPage(e, i))
+            widget.mouseDoubleClickEvent = (lambda a, e = widget.path, i = widget.collection_id , p = widget.pw : self.openNewPage(e, i, p))
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
             widget.favoriteSignal.connect(self.updateFavoriteModel)
             # add the widget to stage
@@ -1069,12 +1145,12 @@ class LibraryMangementSystem(QMainWindow):
     def setSelectionWidget(self, widget):
 
         if self.currentStage.selected_widget:
-            self.currentStage.selected_widget.isSelected = 'false'
+            self.currentStage.selected_widget.setObjectName("collectionBaseWidget")
         # set thr stage selected widget as the this
         if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
             self.currentStage.selected_widget = widget
-            # set the selected id to True
-            widget.isSelected = 'true'
+            self.currentStage.selected_widget.setObjectName("collectionBaseWidgetSelected")
+            self.currentStage.selected_widget.setStyleSheet(dark_style_sheet_for_Collection)
             # update the status
             self.setCollectionStatus()
 
@@ -1224,6 +1300,21 @@ class LibraryMangementSystem(QMainWindow):
         # call to the theme box get state method
         theme = self.themeBox.getState()
         return theme
+
+    def sortCollection(self, data):
+
+        # first get the sort option from the sortBox
+        sort_option = self.sortingBox.currentIndex()
+
+        if sort_option == 0:
+            # filter the data based the title
+            data.sort(key = lambda a: a["title"])
+            return data
+        elif sort_option == 1:
+            data.sort(key=lambda a: a["title"], reverse=True)
+            return data
+
+        return data
 
 
 # Press the green button in the gutter to run the script.
