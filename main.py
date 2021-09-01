@@ -3,6 +3,7 @@ import json
 import os, sqlite3
 import sys, random
 from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
+from status_widgets import FullStatusWidget
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
@@ -342,11 +343,21 @@ class LibraryMangementSystem(QMainWindow):
         # get the data from the model
         data = self.favoriteModel.todos[index.row()]
 
+
         if data["type"] == "collection":
+            # open the data base for get the password
+            connect = sqlite3.connect(self.db_file)
+            cursor = connect.cursor()
+
+            cursor.execute(f" SELECT pw FROM collection_table WHERE collection_id = '{data['id']}' ")
+            pw = cursor.fetchall()
+            connect.close()
+
+            pw = pw[0][0]
             # open the new page
-            self.openNewPage(data["path"], data["id"])
+            self.openNewPage(data["path"], data["id"], pw = pw)
             # clear the selection of the list view
-            self.favoriteListWidget.clearSelection()
+            #self.favoriteListWidget.clearSelection()
 
     def updateFavoriteModel(self, data : list):
 
@@ -378,9 +389,12 @@ class LibraryMangementSystem(QMainWindow):
         self.recentListView.setObjectName("recentListView")
         self.recentListView.setMinimumHeight(700)
 
+
         # create the recent model to set to the list view
         self.recentModel = RecentItemModel()
         self.recentListView.setModel(self.recentModel)
+
+        self.recentListView.clicked.connect(self.clickedRecent)
 
         # create the vbox for favorite bar
         vbox = QVBoxLayout()
@@ -389,6 +403,23 @@ class LibraryMangementSystem(QMainWindow):
         vbox.addStretch()
 
         self.recentaccessWidget.setLayout(vbox)
+
+    def clickedRecent(self, index):
+
+
+        # get the collection id and path of the clicked item
+        if self.recentModel.todos[index.row()][-1] == "collection":
+            coll_id = self.recentModel.todos[index.row()][0]
+
+            # get the path and pw from the data base
+            connect = sqlite3.connect(self.db_file)
+            cursor = connect.cursor()
+
+            cursor.execute(f" SELECT path, pw FROM collection_table WHERE collection_id = '{coll_id}' ")
+            data = cursor.fetchall()
+            connect.close()
+
+            self.openNewPage(data[0][0], coll_id, pw=data[0][1])
 
     def setUpToolBarWidget(self):
 
@@ -551,9 +582,22 @@ class LibraryMangementSystem(QMainWindow):
             widget.show()
 
     def setUpStageWidget(self):
+
+        # create the tab widget for stage
+        self.stageTab = QTabWidget()
+        self.stageTab.setObjectName("stageTab")
+        self.stageTab.tabBar().setObjectName("stageTabBar")
+        self.stageTab.setContentsMargins(0, 0, 0, 0)
+        self.stageTab.setTabsClosable(True)
+        vbox1 = QVBoxLayout()
+        vbox1.addWidget(self.stageTab)
+
+        self.stageWidget.setLayout(vbox1)
+
         # create the scroll widget
         scroll_area = QScrollArea()
         scroll_area.setObjectName("mainScrollArea")
+        scroll_area.setContentsMargins(0, 0, 0, 0)
 
         # create the stage area widget for scroll area
         self.stageArea = QWidget()
@@ -568,10 +612,11 @@ class LibraryMangementSystem(QMainWindow):
 
         self.stageArea.setLayout(self.stageLayout)
         # add scroll area to the stage widget
-        vbox = QVBoxLayout()
-        vbox.addWidget(scroll_area)
+        #vbox = QVBoxLayout()
+        #vbox.addWidget(scroll_area)
 
-        self.stageWidget.setLayout(vbox)
+        #self.stageWidget.setLayout(vbox)
+        self.stageTab.addTab(scroll_area, "Main")
 
 
         # set the important fileds for system
@@ -889,6 +934,7 @@ class LibraryMangementSystem(QMainWindow):
                                                           i = collection_widget.collection_id , p = collection_widget.pw : self.openNewPage(e, i, p))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
         collection_widget.favoriteSignal.connect(self.updateFavoriteModel)
+        collectionWidget.statusSignal.connect(self.buildStatusWidget)
 
 
 
@@ -1119,10 +1165,18 @@ class LibraryMangementSystem(QMainWindow):
             widget.mouseDoubleClickEvent = (lambda a, e = widget.path, i = widget.collection_id , p = widget.pw : self.openNewPage(e, i, p))
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
             widget.favoriteSignal.connect(self.updateFavoriteModel)
+            widget.statusSignal.connect(self.buildStatusWidget)
             # add the widget to stage
             self.currentStage.addCollection(widget, data)
         if isinstance(self.stageLayout, QVBoxLayout):
             self.stageLayout.addStretch()
+
+    def buildStatusWidget(self, id : str):
+
+        # create the new status widget
+        newStatusWidget = FullStatusWidget(id)
+        # add to the stage Tab
+        self.stageTab.addTab(newStatusWidget, f"Tab {self.stageTab.currentIndex()}")
 
     def saveCollectionTrackings(self, id):
 
@@ -1145,11 +1199,12 @@ class LibraryMangementSystem(QMainWindow):
     def setSelectionWidget(self, widget):
 
         if self.currentStage.selected_widget:
-            self.currentStage.selected_widget.setObjectName("collectionBaseWidget")
+            self.currentStage.selected_widget.baseWidget.setObjectName("collectionBaseWidget")
+            self.currentStage.selected_widget.setStyleSheet(dark_style_sheet_for_Collection)
         # set thr stage selected widget as the this
         if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
             self.currentStage.selected_widget = widget
-            self.currentStage.selected_widget.setObjectName("collectionBaseWidgetSelected")
+            self.currentStage.selected_widget.baseWidget.setObjectName("collectionBaseWidgetSelected")
             self.currentStage.selected_widget.setStyleSheet(dark_style_sheet_for_Collection)
             # update the status
             self.setCollectionStatus()

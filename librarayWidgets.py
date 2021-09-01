@@ -167,6 +167,7 @@ class collectionWidget(QWidget):
 
     # defined the new signal for change the favorite widgets of the model
     favoriteSignal = pyqtSignal(list)
+    statusSignal = pyqtSignal(str)
 
     def __init__(self, title, description, image_dir, path, pw, id):
         super(collectionWidget, self).__init__()
@@ -243,13 +244,22 @@ class collectionWidget(QWidget):
         self.changePasswordAction.setToolTip("Chnange the collection passowrd or enter the new password")
         self.changePasswordAction.triggered.connect(self.changePassword)
 
+        self.statusAction = QAction("Informations", self)
+        self.statusAction.triggered.connect(self.fireStatus)
+        self.statusAction.setToolTip("More About the Collection")
+
         # add to the menu
         self.menu.addAction(self.changeTitleAction)
         self.menu.addAction(self.changeDesAction)
         self.menu.addAction(self.changeImageAction)
         self.menu.addAction(self.changePasswordAction)
+        self.menu.addAction(self.statusAction)
 
         self.menuButton.setMenu(self.menu)
+
+    def fireStatus(self):
+
+        self.statusSignal.emit(self.collection_id)
 
     def changePassword(self):
 

@@ -86,7 +86,13 @@
     {
         "type": "collection",
         "id": "kl4fm",
-        "title": "Mxwell Equations",
+        "title": "Maxwell Equations",
         "path": "/0/0/0/"
+    },
+    {
+        "type": "collection",
+        "id": "l3bix",
+        "title": "Artthur C. Clerk Book Series",
+        "path": "/5/1/"
     }
 ]

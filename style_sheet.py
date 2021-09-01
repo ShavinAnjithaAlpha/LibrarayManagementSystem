@@ -21,6 +21,20 @@ dark_style_sheet = """
                 QTabWidget#reminderTab::pane {border : 1px solid rgb(50, 50, 50);
                                         border-radius : 5px;
                                         margin : 0px;}
+                                        
+                QTabWidget#stageTab:pane {background : none;
+                                            border : none;}
+                                            
+                QTabBar#stageTabBar::tab {border-bottom-left-radius : -5px;
+                                    border-bottom-right-radius : -5px;
+                                    border-top-right-radius : 5px;
+                                    border-top-left-radius : 5px;}
+                                    
+                QTabBar#stageTabBar::tab:selected {border-bottom-left-radius : -5px;
+                                    border-bottom-right-radius : -5px;
+                                    border-top-right-radius : 5px;
+                                    border-top-left-radius : 5px;
+                                    background-color : rgb(250, 0, 0)}
                                                 
                 QWidget#statusWidget {background-color : rgb(0 ,0, 0);
                                     border : none;
@@ -171,9 +185,10 @@ dark_style_sheet = """
                 QInputDialog QPushButton {background : none;
                                         color: white;
                                         border : 1px solid rgb(100,100, 100);
-                                        border-radius : 2px;
+                                        border-radius :0px;
                                         padding : 5px;
-                                        font-size : 17px;}
+                                        font-size : 17px;
+                                        width : 50px;}
                                         
                      
                 QInputDialog QLineEdit {border : 1px solid rgb(100, 100, 100);
@@ -197,6 +212,20 @@ dark_style_sheet = """
                 QPushButton#toolBarHideButton:hover {color : blue} 
                 
                 QComboBox#sortingComboBox:pane {border-radius : 5px;}
+                
+                QMessageBox {min-width : 250px;}
+                
+                QMessageBox QPushButton {background : none;
+                                        border : 1px solid rgb(100,100, 100);
+                                        color : white;
+                                        padding : 5px;
+                                        font-size : 14px;
+                                        width : 80px;}
+                
+                QMessageBox QPushButton:hover {background : rgb(240, 60, 0);
+                                        border : none}
+                                        
+                QMessageBox QLabel {font-size : 14px;}
                 
                 """
 
@@ -287,7 +316,7 @@ dark_style_sheet_for_Collection = """
                                     QInputDialog QPushButton {background : none;
                                         color: white;
                                         border : 1px solid rgb(100,100, 100);
-                                        border-radius : 2px;
+                                        border-radius : 0px;
                                         padding : 5px;
                                         font-size : 17px;}
                                         
@@ -302,8 +331,7 @@ dark_style_sheet_for_Collection = """
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
-                                    QWidget#collectionBaseWidgetSelected {background-color : rgb(100, 10, 100);
-                                                                    border : 1px solid rgb(240, 50, 6);
+                                    QWidget#collectionBaseWidgetSelected {background-color : rgb(0, 50, 200);
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
@@ -410,3 +438,25 @@ root_collection_dark_style_sheet = """
                                     
                                     
                                     """
+
+dark_style_sheet_for_status = """
+                                
+                                
+                                QPushButton#closeButton {background-color : rgb(250, 50, 0);
+                                                        padding : 5px;
+                                                        color : white;
+                                                        border : none;
+                                                        font-size : 16px;
+                                                        width : 100px;
+                                                        }
+                                                        
+                                QPushButton#closeButton:hover {background-color : rgb(200, 0, 0)}
+                                
+                                QLabel#historyLabels {color : rgb(150, 150, 150)}
+                                
+                                QLabel#historyReferLabel {background-color : rgb(30, 30, 30);
+                                                        padding : 10px;
+                                                        width : 80px;
+                                                        font-size : 17px;}
+                                
+                                """
