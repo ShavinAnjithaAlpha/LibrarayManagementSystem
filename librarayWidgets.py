@@ -4,10 +4,10 @@ import sqlite3
 import os
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark, root_collection_dark_style_sheet
-from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QListView, QFormLayout, QMenu,
+from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QSizePolicy, QFormLayout, QMenu,
                              QAction, QInputDialog, QFileDialog, QPlainTextEdit, QLineEdit, QMessageBox)
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex
-from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex, QRectF
+from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon, QPainter, QPen
 
 
 # create the book widget
@@ -216,6 +216,15 @@ class collectionWidget(QWidget):
         self.addFavoriteButton.setCheckable(True)
         self.setState()
 
+        # create the loack button
+        self.lockbutton  = QLabel()
+        if self.pw != "":
+            self.lockbutton.setPixmap(QPixmap("images/sys_images/lock.png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+        # create the button create the role
+        self.roleButton = QPushButton(">")
+        self.hideButton = QPushButton("<")
+
         # create the menu button
         self.menuButton = QPushButton()
         self.menuButton.setObjectName("menuButton")
@@ -244,7 +253,7 @@ class collectionWidget(QWidget):
         self.changePasswordAction.setToolTip("Chnange the collection passowrd or enter the new password")
         self.changePasswordAction.triggered.connect(self.changePassword)
 
-        self.statusAction = QAction("Informations", self)
+        self.statusAction = QAction("Infomations", self)
         self.statusAction.triggered.connect(self.fireStatus)
         self.statusAction.setToolTip("More About the Collection")
 
@@ -473,6 +482,9 @@ class boxCollectionWidget(collectionWidget):
         self.gridLyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
         self.gridLyt.addWidget(self.addFavoriteButton, 0, 3)
         self.gridLyt.addWidget(self.menuButton, 0, 2)
+        self.gridLyt.addWidget(self.lockbutton, 1, 3)
+
+
 
         self.baseWidget.setLayout(self.gridLyt)
 
@@ -485,7 +497,7 @@ class listCollectionWidget(collectionWidget):
     def initializeUI(self):
 
         self.setMinimumHeight(150)
-        self.setMaximumHeight(220)
+        #self.setMaximumHeight(220)
 
         self.titleLabel.setFont(QFont("verdana", 22))
 
@@ -496,10 +508,39 @@ class listCollectionWidget(collectionWidget):
         self.grid_lyt.addWidget(self.descriptionLabel, 1, 1, 1, 1)
         self.grid_lyt.addWidget(self.addFavoriteButton, 0, 3)
         self.grid_lyt.addWidget(self.menuButton, 0, 2)
+        self.grid_lyt.addWidget(self.lockbutton, 1, 3)
+        self.grid_lyt.addWidget(self.roleButton, 0, 4)
+        self.grid_lyt.addWidget(self.hideButton, 0, 4)
+
+        self.hideButton.hide()
+
+        self.roleButton.pressed.connect(self.openRole)
+        self.hideButton.pressed.connect(self.removeRole)
 
 
-        self.baseWidget.setLayout(self.grid_lyt)
 
+        self.roleButton.setObjectName("collection_role_button")
+        self.hideButton.setObjectName("collection_role_button")
+
+        # create the vbox
+        self.vbox = QVBoxLayout()
+        self.vbox.addLayout(self.grid_lyt)
+
+        self.baseWidget.setLayout(self.vbox)
+
+    def openRole(self):
+        # create the new collectionRole object
+        self.role = CollectionRoll(self.collection_id)
+        self.vbox.addWidget(self.role)
+        self.vbox.addStretch(1)
+
+        self.hideButton.show()
+        self.roleButton.hide()
+
+    def removeRole(self):
+        self.role.deleteLater()
+        self.roleButton.show()
+        self.hideButton.hide()
 
 class switchButton(QWidget):
 
@@ -870,16 +911,91 @@ class rootCollectionWidget(QWidget):
         self.setLayout(vBox)
 
 
+class CollectionRoll(QWidget):
+    def __init__(self, collection_code: str):
+        super(CollectionRoll, self).__init__()
+        self.collection_id = collection_code
+
+        self.data = []
+        self.n = 0
+        self.t = 50
+
+        self.l = 50
+        self.color = [QColor(0, 70, 130), QColor(0, 50, 100)]
+
+        self.loadData()
+        self.initializeUI()
+
+    def loadData(self):
+
+        # load the data base datas
+        connection = sqlite3.connect("db/data.db")
+        cursor = connection.cursor()
+
+        cursor.execute(f" SELECT path, name FROM collection_table ")
+        data = cursor.fetchall()
+
+        cursor.execute(f" SELECT path FROM collection_table WHERE collection_id = '{self.collection_id}' ")
+        main_path = cursor.fetchall()[0][0]
+
+        connection.close()
+
+
+        # filter the data
+        filter_data = []
+
+        for item in data:
+            if item[0].startswith(main_path) and (len(item[0].split("/")) - len(main_path.split("/"))) == 1:
+                filter_data.append(item[1])
+
+        self.data = filter_data
+        self.n = len(self.data)
+
+    def initializeUI(self):
+
+        self.setMinimumHeight(self.t * self.n)
+
+    def paintEvent(self, event):
+
+       # crete the painter object
+        painter = QPainter(self)
+
+        # defined the widget drawing parameters
+        width = painter.device().width()
+        height = painter.device().height()
+
+        try:
+            t = self.t
+
+            painter.setFont(QFont('verdana', 14))
+            # create the collection box
+            for i in range(0, self.n):
+                painter.setPen(QColor(0, 0, 0))
+                painter.setBrush(self.color[i%2])
+                painter.drawRect(0, i * t, self.l, t)
+
+                painter.setPen(QPen(QColor(255, 255, 255), 1))
+                painter.drawText(QRectF(0, i * t, self.l, t), Qt.AlignCenter, f"{i+1}")
+
+                painter.setPen(QColor(0, 0, 0))
+                painter.drawRect(self.l, i * t, (width - self.l), t)
+                painter.setPen(QPen(QColor(255, 255, 255), 1))
+                painter.drawText(QRectF(self.l + 10, i * t, (width - self.l), t), Qt.AlignVCenter, self.data[i])
+
+        except:
+            pass
+
+        painter.end()
+
+
+
 if __name__ == "__main__":
     app = QApplication([])
-    window = listBookWidget("pdf", "455sdsd", "1/2/5")
+
+
+
+    window = CollectionRoll("p2qf2")
     window.show()
-
-    # create the model
-    model = RecentItemModel()
-    view = QListView()
-    view.setModel(model)
-    view.show()
-
+    app.setStyleSheet(""" QWidget {background-color : rgb(20, 20, 20)}""")
     app.exec_()
 

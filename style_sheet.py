@@ -403,6 +403,14 @@ dark_style_sheet_for_Collection = """
                                                                 border : 1px solid  red}
                                     
                                     
+                                    QPushButton#collection_role_button {background : none;
+                                                                        color : rgb(100, 100, 100);
+                                                                        border : none;
+                                                                        max-width : 20px;}
+                                                                        
+                                    QPushButton#collection_role_button:hover {background : none;
+                                                                        color : rgb(0, 50, 150);
+                                                                        border : none}
                                     
                                     """
 
@@ -460,3 +468,106 @@ dark_style_sheet_for_status = """
                                                         font-size : 17px;}
                                 
                                 """
+
+
+style_sheet_dark_for_book = """
+
+                            QWidget {background-color : rgb(10, 10, 10);
+                                    color : white;
+                                    border-top : 1px solid rgb(0, 60, 200);
+                                    margin : 0px}
+                            
+                            QWidget#historyWidget {background-color : rgb(150, 50, 20);
+                                                    border : 1px solid rgb(0, 0, 200);
+                                                    margin : 0px}
+                            
+                            QWidget#bookMarkWidget {background-color : rgb(150,0, 0);
+                                                    border : 1px solid rgb(0, 0, 200)}
+                            
+                            
+                            QPushButton#pageAddButton {background-color : rgb(40, 40, 40);
+                                                        border : none;
+                                                        color : white;
+                                                        padding : 5px;
+                                                        }        
+                                                        
+                            QPushButton#pageAddButton:hover {
+                                                        color : rgb(200, 200,200);
+                                                    
+                                                        }        
+                            
+                            QLabel#pageTitleLabel {color  :rgb(0, 0, 200);
+                                                    border: none;
+                                                    background-color : rgb(40, 40, 40);
+                                                    padding : 5px;}
+                                                    
+                            QLabel#topTitleLabel {color : rgb(200, 200, 200);
+                                                border : none;}
+                            QLabel#descriptionLabel {color : rgb(150, 150, 150);
+                                                    border : none}
+                            
+                            QPushButton#openButton {padding : 10px;
+                                                    min-width : 200px;
+                                                    margin-left : 100px;
+                                                    margin-right : 100px;
+                                                    background-color : rgb(0, 0, 200);
+                                                    border : none;
+                                                    color : white}
+                                                    
+                            QPushButton#openButton:hover , QPushButton#openButton:pressed {background-color : blue}
+                                                    
+                            QLabel#coverImage {border : none;
+                                                border-left : 3px solid rgb(0, 0, 200);
+                                                border-radius : 0px;
+                                                border-top-right-radius : 20px;
+                                                border-bottom-right-radius : 20px;
+                                                margin-left : 20px;}
+                                                
+                            QLabel#commentTitleLabel {padding : 10px;
+                                                        margin : 0px;
+                                                        border : none;
+                                                        color : rgb(150, 150, 150);
+                                                        border-bottom : 1px solid blue;
+                                                        }
+                                                        
+                            QPushButton#commentAddButton {padding : 10px;
+                                                        margin : 0px;
+                                                        border : none;
+                                                        border-bottom : 1px solid blue;
+                                                        }
+                                                        
+                            QWidget#bookStatusWidget {background-color : rgb(20, 20, 20)}
+                            
+                            QLabel#statusTitleLabel {background : none;
+                                                    border : none;
+                                                    margin : 0px;
+                                                    color : rgb(200, 200, 200);
+                                                    border-bottom : 1px solid blue;
+                                                    padding : 12px;
+                                                    }
+                                                    
+                            QWidget#pageBase {background-color : rgb(0, 0, 220);
+                                            margin : 10px;
+                                            border-radius : 10px;
+                                            border : none;
+                                            padding : 20px;}
+                                                    
+                            QLabel {color : white}
+                            
+                            QLabel#pageNumberLabel {color  :rgb(240, 240, 240);
+                                                    border : none;
+                                                    padding : 5px;
+                                                    background : none;
+                                                    padding : 5px;}
+                                                    
+                            QLabel#pageCommentLabel {color : rgb(230, 230,230);
+                                                    border : none;
+                                                    background : none;
+                                                    padding : 5px;}
+                            
+                            QLabel#pageDateTimeLabel {border : none;
+                                                        color : rgb(200, 200, 200);
+                                                        background : none;
+                                                        padding : 10px;}
+
+"""

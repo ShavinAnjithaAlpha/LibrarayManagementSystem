@@ -952,9 +952,11 @@ class LibraryMangementSystem(QMainWindow):
             pw_text, ok = QInputDialog.getText(self, "Password Dialog", "Enter the Password : ", echo=QLineEdit.Password)
             if ok and pw_text == pw:
                 check = True
-            else:
+            elif pw_text != pw and ok:
                 check = False
                 QMessageBox.warning(self, "Warning", "Password Incorrect! Please Try Again!")
+            else:
+                check = False
         else:
             check = True
 

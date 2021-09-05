@@ -94,5 +94,11 @@
         "id": "l3bix",
         "title": "Artthur C. Clerk Book Series",
         "path": "/5/1/"
+    },
+    {
+        "type": "book",
+        "id": "n6rt5",
+        "title": "study-notes-for-statistical-physics.pdf",
+        "path": "/0/"
     }
 ]
