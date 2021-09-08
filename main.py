@@ -1,9 +1,10 @@
 # This is a sample Python script
 import json
 import os, sqlite3
-import sys, random
+import sys, random, threading
 from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
 from status_widgets import FullStatusWidget
+from book_space import BookArea
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
@@ -16,6 +17,38 @@ from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
 
 chrs = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "w", "x", "y", "z",
         "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+def refreshDataBase(db_file):
+    # create the connection and get the cursor ibject
+    connection = sqlite3.connect(db_file)
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT book_id FROM book_table")
+
+    ids = cursor.fetchall()
+    ids = [id[0] for id in ids]
+
+    # open the book json file
+    with open("db/book.json") as file:
+        user_data = json.load(file)
+
+    for pdf in user_data.keys():
+        if os.path.exists(user_data.get(pdf).get('dir')):
+            # remove from the ids first
+            ids.remove(pdf)
+
+
+    #with open("db/book.json", "w") as file:
+    #    json.dump(user_data, file, indent=4)
+
+    for id in ids:
+        cursor.execute(f"DELETE FROM book_table WHERE book_id = '{id}' ")
+
+    # save the changes and close the connection
+    connection.commit()
+    connection.close()
+    print('[INFO] successfully removed the undefined pdf files from the data base')
+
 
 class Stage:
     def __init__(self):
@@ -108,6 +141,8 @@ class LibraryMangementSystem(QMainWindow):
             os.mkdir("db")
         if not os.path.exists("images"):
             os.mkdir("images")
+        if not os.path.exists("db/temp"):
+            os.mkdir("db/temp")
 
         if not os.path.exists("db/collection.json"):
             with open("db/collection.json", "w") as file:
@@ -166,8 +201,11 @@ class LibraryMangementSystem(QMainWindow):
         self.setUpWidgets()
         self.setStyleSheet(dark_style_sheet)
 
+
         # show the window in the screen
         self.show()
+
+        self.refreshDataBase()
 
     def setUpWidgets(self):
 
@@ -562,6 +600,8 @@ class LibraryMangementSystem(QMainWindow):
         self.toolBarHideButton.hide()
         self.toolBarShowButton.show()
 
+        self.titleBaridget.hide()
+
         for widget in self.toolBarItems:
             widget.hide()
 
@@ -577,6 +617,8 @@ class LibraryMangementSystem(QMainWindow):
 
         self.toolBarHideButton.show()
         self.toolBarShowButton.hide()
+
+        self.titleBaridget.show()
 
         for widget in self.toolBarItems:
             widget.show()
@@ -863,6 +905,7 @@ class LibraryMangementSystem(QMainWindow):
                 self.stageLayout.addWidget(widget, count//4, count%4)
             # connect to the slots th widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
+            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
 
             # update the stage
             self.currentStage.addBook(widget, {"title" : os.path.split(file),
@@ -1149,6 +1192,7 @@ class LibraryMangementSystem(QMainWindow):
             self.currentStage.addBook(widget, data)
             # connect to the slots of the widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
+            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
 
 
     def addCollectionWidgets(self, FilterData : list):
@@ -1258,6 +1302,14 @@ class LibraryMangementSystem(QMainWindow):
         self.statusBox.addSeperator()
         # add the created date and time
         self.statusBox.addLabel(f"Created On\n {widget_data['date']}\nAt {widget_data['time']}")
+
+    def openBookSpace(self, book_id : str):
+
+        # create the new book space
+        newBookSpace = BookArea(book_id)
+
+        # add to the stage tab bar
+        newBookSpace.show()
 
 
     def getNeedPaths(self, rootPath):
@@ -1372,6 +1424,34 @@ class LibraryMangementSystem(QMainWindow):
             return data
 
         return data
+
+
+    def refreshDataBase(self):
+
+        # create the new thread and remove the undefined pdf from the data base
+        newThread = threading.Thread(target=refreshDataBase, args=(self.db_file, ))
+        newThread.start()
+        # join with main thread
+        newThread.join()
+
+    def closeEvent(self, event) -> None:
+
+        # ask from the user
+        message = QMessageBox.warning(self, "Close Dialog" , "Are You Sure to Close!", QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+
+
+        if message == QMessageBox.StandardButton.Yes:
+            # delete th temporary files from the system
+            for i in os.listdir("db/temp"):
+                try:
+                    os.removedirs(i)
+                    print(f" {i} is removed")
+                except:
+                    print(f"{i} cannot be removed")
+
+            os.removedirs("db/temp")
+
+            self.close()
 
 
 # Press the green button in the gutter to run the script.

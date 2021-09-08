@@ -1,14 +1,18 @@
 import json
+import random
 import shutil
 import sqlite3
 import os
+import  fitz
 
 from style_sheet import dark_style_sheet_for_widgets, dark_style_sheet_for_Collection, status_style_sheet_dark, root_collection_dark_style_sheet
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxLayout, QVBoxLayout, QGridLayout, QSizePolicy, QFormLayout, QMenu,
                              QAction, QInputDialog, QFileDialog, QPlainTextEdit, QLineEdit, QMessageBox)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QAbstractListModel, QModelIndex, QRectF
-from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon, QPainter, QPen
+from PyQt5.QtGui import QFont, QColor, QPixmap, QImage, QIcon, QPainter, QPen, QKeyEvent
 
+chrs = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "w", "x", "y", "z",
+        "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 # create the book widget
 class bookWidget(QWidget):
@@ -57,6 +61,23 @@ class bookWidget(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(self.baseWidget)
         self.setLayout(vbox)
+
+    def keyPressEvent(self, event : QKeyEvent) -> None:
+
+        if event.key() == Qt.Key_D:
+            print("press delete")
+            warning = QMessageBox.warning(self , "Delete Warning", "Are You Sure to Delete ?")
+
+            if warning == QMessageBox.StandardButton.Yes:
+                # delete the widget and from the data base
+                connect = sqlite3.connect("db/data.db")
+                cursor = connect.cursor()
+
+                cursor.execute(f" DELETE FROM book_table WHERE book_id = '{self.book_id}' ")
+                connect.commit()
+                connect.close()
+                # delete the widget
+                self.deleteLater()
 
     def getInitialState(self):
 
@@ -113,6 +134,17 @@ class bookWidget(QWidget):
         # set the current button state
         self.setState()
 
+    @staticmethod
+    def getIdentifire():
+
+        length = 7
+        index_str = ""
+
+        for i in range(length):
+            index_str += random.choice(chrs)
+
+        return index_str
+
 
 class boxBookWidget(bookWidget):
     def __init__(self, title, book_id, path):
@@ -122,10 +154,7 @@ class boxBookWidget(bookWidget):
         self.setMaximumSize(QSize(600, 400))
 
         self.coverImageLabel.setFixedSize(QSize(250, 300))
-        # set the pix map
-        self.coverImageLabel.setPixmap(
-            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
-                                                        Qt.FastTransformation))
+
         self.titleLabel.setWordWrap(True)
 
         # create the v box for pack the title and form
@@ -140,6 +169,33 @@ class boxBookWidget(bookWidget):
 
         self.baseWidget.setLayout(gridLyt)
 
+        try:
+            # load the pdf cover image
+            with open("db/book.json") as file:
+                bookData = json.load(file)
+
+            dir = bookData.get(self.book_id).get("dir")
+            # load the document
+            doc = fitz.Document(dir)
+            page1 = doc.load_page(0)
+
+            pic = page1.get_pixmap()
+            image_dir = f"db/temp/image{bookWidget.getIdentifire()}.png"
+
+            pic.save(image_dir)
+            # close the document
+            doc.close()
+
+            self.coverImageLabel.setPixmap(
+                QPixmap(image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+        except:
+            # set the pix map
+            self.coverImageLabel.setPixmap(
+                QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+
+
+
+
 class listBookWidget(bookWidget):
     def __init__(self, title, book_id, path):
         super(listBookWidget, self).__init__(title, book_id, path)
@@ -148,10 +204,6 @@ class listBookWidget(bookWidget):
         self.setMaximumHeight(150)
 
         self.coverImageLabel.setFixedSize(QSize(50, 50))
-        # set the pix map
-        self.coverImageLabel.setPixmap(
-            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
-                                                        Qt.FastTransformation))
         # create the grid
         gridLyt = QGridLayout()
         gridLyt.addWidget(self.titleLabel, 0, 1)
@@ -160,6 +212,31 @@ class listBookWidget(bookWidget):
         gridLyt.addWidget(self.addFavoriteButton, 0, 2)
 
         self.baseWidget.setLayout(gridLyt)
+
+        try:
+            # load the pdf cover image
+            with open("db/book.json") as file:
+                bookData = json.load(file)
+
+            dir = bookData.get(self.book_id).get("dir")
+            # load the document
+            doc = fitz.Document(dir)
+            page1 = doc.load_page(0)
+
+            pic = page1.get_pixmap()
+            image_dir = f"db/temp/image{bookWidget.getIdentifire()}.png"
+
+            pic.save(image_dir)
+            # close the document
+            doc.close()
+
+            self.coverImageLabel.setPixmap(
+                QPixmap(image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+        except:
+            # set the pix map
+            self.coverImageLabel.setPixmap(
+                QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
+                                                            Qt.FastTransformation))
 
 
 # create the collection widget
@@ -791,6 +868,7 @@ class StatusWidget(QWidget):
 
         # create th text area
         textArea = QPlainTextEdit()
+        textArea.setObjectName("plainTextEdit")
         textArea.setPlainText(data)
         textArea.setReadOnly(True)
         textArea.setFixedSize(QSize(200, 70))

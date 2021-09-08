@@ -133,5 +133,10 @@
         "title": "Bluetooth Processing",
         "description": "",
         "image_dir": "images/sys_images/coll_img1.png"
+    },
+    "p3jqe": {
+        "title": "Phsyics Text Books",
+        "description": "",
+        "image_dir": "images\\Setapp.png"
     }
 }

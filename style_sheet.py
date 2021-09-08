@@ -3,7 +3,7 @@ dark_style_sheet = """
                 
                 QWidget#mainWidget {background-color : rgb(20, 20 ,20)}
                 
-                QWidget#stageArea {background-color : rgb(30, 30, 30);
+                QWidget#stageArea {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(10, 10, 10), stop : 1 rgb(50, 50, 50));;
                                     border : none}
                 
                 QScrollArea#mainScrollArea {border : none}
@@ -227,6 +227,9 @@ dark_style_sheet = """
                                         
                 QMessageBox QLabel {font-size : 14px;}
                 
+                QMessageBox#closeMessage QPushButton {background-color : blue;
+                                                    padding : 50px;}
+                
                 """
 
 dark_style_sheet_for_widgets = """
@@ -327,17 +330,21 @@ dark_style_sheet_for_Collection = """
                                                 color : black}
                                     
                                     QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
+                                    background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 20), stop : 1 rgb(0, 0, 100));
                                                                     border : 1px solid rgb(240, 50, 6);
+                                                                    border : none;
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
                                     QWidget#collectionBaseWidgetSelected {background-color : rgb(0, 50, 200);
+                                    background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 100), stop : 1 rgb(0, 0, 240));
                                                                     border-left : 8px solid rgb(0, 240, 66);
                                                                     border-radius : 5px;}
                                                                     
                                    
                                                                     
-                                    QWidget#collectionBaseWidget:hover {background-color : rgb(30, 30, 30)}
+                                    QWidget#collectionBaseWidget:hover {background-color : rgb(30, 30, 30);
+                                                                        background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 30), stop : 1 rgb(0, 0, 130));}
                                                                     
                                     QLabel#collectionDescriptionLabel {color : rgb(150, 150, 150);
                                                                         alignment : center}
@@ -370,6 +377,8 @@ dark_style_sheet_for_Collection = """
                                                             border-top-left-radius : 0px;
                                                             border-bottom-left-radius : 0px;
                                                             color : white}
+                                                            
+                                    QWidget#bookBaseWidget:hover {background-color : rgb(20, 20, 30)}
                                                             
                                     QLabel#bookTitleLabel {background : none;
                                                             font-family : verdana;
@@ -433,6 +442,9 @@ status_style_sheet_dark = """
                                             
                         QLabel {font-size : 16px;
                                 alignment : left}
+                                
+                        QWidget#plainTextEdit {background : none;
+                                        border : none}
                         
                         """
 
@@ -477,8 +489,9 @@ style_sheet_dark_for_book = """
                                     border-top : 1px solid rgb(0, 60, 200);
                                     margin : 0px}
                             
-                            QWidget#historyWidget {background-color : rgb(150, 50, 20);
-                                                    border : 1px solid rgb(0, 0, 200);
+                            QWidget#historyWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 30), stop :0.5 rgb(0, 0, 80) ,stop : 1 rgb(0, 0, 150));
+                                                    border : none;
+                                                    border-left : 1px solid rgb(0, 0, 200);
                                                     margin : 0px}
                             
                             QWidget#bookMarkWidget {background-color : rgb(150,0, 0);
@@ -514,7 +527,7 @@ style_sheet_dark_for_book = """
                                                     border : none;
                                                     color : white}
                                                     
-                            QPushButton#openButton:hover , QPushButton#openButton:pressed {background-color : blue}
+                            QPushButton#openButton:hover , QPushButton#openButton:pressed {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 100), stop : 1 rgb(0, 0, 250));}
                                                     
                             QLabel#coverImage {border : none;
                                                 border-left : 3px solid rgb(0, 0, 200);
@@ -536,7 +549,9 @@ style_sheet_dark_for_book = """
                                                         border-bottom : 1px solid blue;
                                                         }
                                                         
-                            QWidget#bookStatusWidget {background-color : rgb(20, 20, 20)}
+                            QWidget#bookStatusWidget {background-color : rgb(20, 20, 20);
+                                                        border-right : 1px solid blue;
+                                                        border-left : 1px solid blue}
                             
                             QLabel#statusTitleLabel {background : none;
                                                     border : none;
@@ -546,7 +561,7 @@ style_sheet_dark_for_book = """
                                                     padding : 12px;
                                                     }
                                                     
-                            QWidget#pageBase {background-color : rgb(0, 0, 220);
+                            QWidget#pageBase {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 250), stop : 1 rgb(0, 0, 100));;
                                             margin : 10px;
                                             border-radius : 10px;
                                             border : none;
@@ -569,5 +584,59 @@ style_sheet_dark_for_book = """
                                                         color : rgb(200, 200, 200);
                                                         background : none;
                                                         padding : 10px;}
+                                                        
+                            QLabel#keyLabel {border : none;
+                                            background : none;
+                                            font-family : verdana;
+                                            font-size : 21px;
+                                            }
+                                            
+                            QLabel#valueLabel {border : none;
+                                            background : none;
+                                            font-family : verdana;
+                                            font-size : 16px;
+                                            }
+                                            
+                            QLabel#PDFLabel {color : blue;
+                                            font-size : 30px;
+                                            border : none}
+                                            
+                            QPushButton#bookmarkAddButton {background-color : blue;
+                                                            padding : 5px;
+                                                            color : white;
+                                                            border : none;
+                                                            max-width : 50px;}
+                                                            
+                            QPushButton#bookmarkAddButton:hover {background-color : rgb(0, 0, 200)}
+                            
+                            QLabel#bookmarkTitleLabel {background-color : rgb(25, 25, 25);
+                                                        padding : 3px;}
+                                                        
+                            QLabel#bookmarkIndexLabel {background-color : blue;
+                                                    color  :white;
+                                                    padding : 5px;
+                                                    max-width : 60px;
+                                                    border : none}
+                                                    
+                            QLabel#bookmarkPageLabel {background-color : black;
+                                                    color  : white;
+                                                    border : none;
+                                                    border-bottom : 1px solid blue;
+                                                    padding : 5px;
+                                                    min-width : 50px;}
+                                                    
+                            QLabel#bookmarkCommentLabel {background-color : rgb(0, 50, 200);
+                                                        border : none;
+                                                        padding : 5px;
+                                                        min-width : 300px;
+                                                        min-height : 35px;
+                                                        }
+                                                        
+                            QLabel#bookmarkDateLabel {background-color : black;
+                                                    border : none;
+                                                    border-bottom : 1px solid blue;
+                                                    padding : 5px;}
+                                                    
+                            QWidget#bookCommentWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 50), stop : 1 rgb(0, 0, 200));}
 
 """
