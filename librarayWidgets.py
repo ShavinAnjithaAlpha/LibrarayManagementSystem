@@ -889,6 +889,7 @@ class StatusWidget(QWidget):
         # created label and set to the form
         label = QLabel(data)
         label.setWordWrap(True)
+        label.setObjectName("titleLabel")
         self.form.setFormAlignment(Qt.AlignHCenter)
         self.form.addWidget(label)
 
@@ -955,6 +956,7 @@ class rootCollectionWidget(QWidget):
 
         # create the root label
         rootLabel = QLabel("Root")
+        rootLabel.setObjectName("rootLabel")
         rootLabel.setFont(QFont("verdana", 17))
 
         # create the cover image label

@@ -1,6 +1,7 @@
 # This is a sample Python script
 import json
 import os, sqlite3
+import shutil
 import sys, random, threading
 from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
 from status_widgets import FullStatusWidget
@@ -8,7 +9,7 @@ from book_space import BookArea
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QProgressBar
 from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, rootCollectionWidget ,StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
 from dialogs import newCollectionDialog
 from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
@@ -32,11 +33,13 @@ def refreshDataBase(db_file):
     with open("db/book.json") as file:
         user_data = json.load(file)
 
-    for pdf in user_data.keys():
+
+
+    for i, pdf in enumerate(user_data.keys()):
         if os.path.exists(user_data.get(pdf).get('dir')):
             # remove from the ids first
             ids.remove(pdf)
-
+        #progress_bar.setValue(int(i / len(user_data.keys())))
 
     #with open("db/book.json", "w") as file:
     #    json.dump(user_data, file, indent=4)
@@ -194,7 +197,7 @@ class LibraryMangementSystem(QMainWindow):
         self.width = self.screen().size().width()
         self.height = self.screen().size().height()
         # first consider about the
-        self.setWindowTitle("Library Management System v0.0.1")
+        self.setWindowTitle("eLibrary Management System v0.0.1")
         self.setGeometry(0, 0, self.width, self.height)
 
         # create the mai widgets
@@ -320,7 +323,7 @@ class LibraryMangementSystem(QMainWindow):
     def setUpTitleBarWidget(self):
 
         # crate the title label
-        title_label = QLabel("Library Management System")
+        title_label = QLabel("eLibrary Management System")
         title_label.setFont(QFont("verdana", 27))
         title_label.setAlignment(Qt.AlignRight)
         title_label.setObjectName("title_label")
@@ -396,6 +399,11 @@ class LibraryMangementSystem(QMainWindow):
             self.openNewPage(data["path"], data["id"], pw = pw)
             # clear the selection of the list view
             #self.favoriteListWidget.clearSelection()
+
+        else:
+            # create the new book widget
+            newBookWindow = BookArea(data['id'])
+            newBookWindow.show()
 
     def updateFavoriteModel(self, data : list):
 
@@ -1437,21 +1445,36 @@ class LibraryMangementSystem(QMainWindow):
     def closeEvent(self, event) -> None:
 
         # ask from the user
-        message = QMessageBox.warning(self, "Close Dialog" , "Are You Sure to Close!", QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
-
+        message = QMessageBox(self)
+        message.setWindowTitle("Close Dialog")
+        message.setText("Are you sure to Close!")
+        message.setIcon(QMessageBox.Icon.Warning)
+        message.setObjectName("closeMessage")
+        message.setStandardButtons(QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+        message = message.exec_()
 
         if message == QMessageBox.StandardButton.Yes:
             # delete th temporary files from the system
             for i in os.listdir("db/temp"):
                 try:
                     os.removedirs(i)
-                    print(f" {i} is removed")
+                except FileNotFoundError:
+                    print(f"cannot find the file...")
+                except OSError:
+                    print("Cannot delete the file because OS error")
+                except PermissionError:
+                    print("Not permissiom to delete file")
                 except:
-                    print(f"{i} cannot be removed")
+                    print("Cannot find the reason for delete the file")
 
-            os.removedirs("db/temp")
+            try:
+                shutil.rmtree("db/temp")
+            except:
+                print("Cannot delete the temp folder...")
 
             self.close()
+        else:
+            event.ignore()
 
 
 # Press the green button in the gutter to run the script.

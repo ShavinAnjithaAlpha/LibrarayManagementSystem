@@ -1,5 +1,11 @@
 
 dark_style_sheet = """
+
+                QMenuBar {background-color : rgb(0, 0, 100);
+                            color : white;
+                            font-size : 18px;}
+                            
+                QMenuBar::item:hover{background-color : blue;}
                 
                 QWidget#mainWidget {background-color : rgb(20, 20 ,20)}
                 
@@ -8,15 +14,20 @@ dark_style_sheet = """
                 
                 QScrollArea#mainScrollArea {border : none}
                 
-                QTabBar::tab {background-color : rgb(240, 0 ,0);
+                QTabBar::tab {background : none;
+                                                color : white;
                                                 border : none;
-                                                padding : 13px;
-                                                color : black;
+                                                padding : 10px;
                                                 border-right : 1px solid black;
+                                                border-top-right-radius : 3px;
+                                                border-top-left-radius : 3px;
                                                 font-size : 15px;
                                                 width : 93px}
-                QTabBar::tab:selected {background-color : rgb(240, 50, 5);
-                                    color : black}
+                                                
+                QTabBar::tab:hover {background-color : rgb(50, 50, 50)}
+                
+                QTabBar::tab:selected {border-bottom : 2px solid blue;
+                                    color : white}
                                     
                 QTabWidget#reminderTab::pane {border : 1px solid rgb(50, 50, 50);
                                         border-radius : 5px;
@@ -25,16 +36,23 @@ dark_style_sheet = """
                 QTabWidget#stageTab:pane {background : none;
                                             border : none;}
                                             
-                QTabBar#stageTabBar::tab {border-bottom-left-radius : -5px;
-                                    border-bottom-right-radius : -5px;
-                                    border-top-right-radius : 5px;
-                                    border-top-left-radius : 5px;}
+                QTabBar#stageTabBar::tab {
+                                    background : none;
+                                    color : white;
+                                    border : none;
+                                    max-height : 15px;
+                                    border-right : 1px solid black;
+                                    border-top-right-radius : 3px;
+                                    border-top-left-radius : 3px;
+                                    font-size : 15px;
+                                    width : 93px}
                                     
-                QTabBar#stageTabBar::tab:selected {border-bottom-left-radius : -5px;
-                                    border-bottom-right-radius : -5px;
-                                    border-top-right-radius : 5px;
-                                    border-top-left-radius : 5px;
-                                    background-color : rgb(250, 0, 0)}
+                
+                                    
+                QTabBar#stageTabBar::tab:selected {
+                                    border-bottom : 2px solid blue;
+                                    
+                                    }
                                                 
                 QWidget#statusWidget {background-color : rgb(0 ,0, 0);
                                     border : none;
@@ -43,8 +61,10 @@ dark_style_sheet = """
                 QWidget#barWidget {background-color : rgb(25, 25, 25);
                                     border : none;}
                                     
-                QWidget#titleBarWidget {background-color : rgb(20, 20, 35);
+                QWidget#titleBarWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 50), stop :0.5 rgb(0, 0, 100)  ,stop : 1 rgb(0, 0,200));
                                         border : none;
+                                        color : white;
+                                        margin : 0px;
                                     }
                                     
                 QWidget#toolBarWidget {border-bottom : 1px solid rgb(0, 0, 30);
@@ -53,7 +73,7 @@ dark_style_sheet = """
                 QWidget#reminderWidget {background-color : rgb(0, 0, 10);
                                         margin : 0px;}
                                         
-                QLabel#title_label {color : rgb(0, 50, 200);
+                QLabel#title_label {color : white;
                                     background : none;}
                                     
                 QLineEdit#searchBar {background-color : rgb(40, 40, 40);
@@ -182,13 +202,13 @@ dark_style_sheet = """
                                         
                 QInputDialog QLabel {font-size : 18px;}
                                         
-                QInputDialog QPushButton {background : none;
+                QInputDialog QPushButton {background : rgb(0, 0, 200);
                                         color: white;
-                                        border : 1px solid rgb(100,100, 100);
+                                        border : none;
                                         border-radius :0px;
                                         padding : 5px;
                                         font-size : 17px;
-                                        width : 50px;}
+                                        width : 120px;}
                                         
                      
                 QInputDialog QLineEdit {border : 1px solid rgb(100, 100, 100);
@@ -200,9 +220,9 @@ dark_style_sheet = """
                                         
                                 
                                          
-                QInputDialog QPushButton:hover {background-color : rgb(240, 60, 6);
+                QInputDialog QPushButton:hover {background-color : blue;
                                                 border : none;
-                                                color : black}
+                                                color : white}
                                                 
                 QPushButton#toolBarHideButton {background : none;
                                                 border : none;
@@ -214,21 +234,36 @@ dark_style_sheet = """
                 QComboBox#sortingComboBox:pane {border-radius : 5px;}
                 
                 QMessageBox {min-width : 250px;}
+                            
+                QMessageBox QLabel {font-size : 20px;}
                 
-                QMessageBox QPushButton {background : none;
-                                        border : 1px solid rgb(100,100, 100);
+                
+                QMessageBox QPushButton {background : rgb(0,0, 200);
+                                        border : 3px solid rgb(0, 0, 255);
                                         color : white;
                                         padding : 5px;
-                                        font-size : 14px;
-                                        width : 80px;}
+                                        font-size : 18px;
+                                        height  : 35px;
+                                        width : 75px;
+                                        margin : 15px;
+                                        border-radius : 10px;
+                                        }
                 
-                QMessageBox QPushButton:hover {background : rgb(240, 60, 0);
+                QMessageBox QPushButton:hover {background : rgb(0, 0, 255);
                                         border : none}
                                         
-                QMessageBox QLabel {font-size : 14px;}
+        
                 
                 QMessageBox#closeMessage QPushButton {background-color : blue;
-                                                    padding : 50px;}
+                                                    padding : 20px;
+                                                    font-size : 21px;
+                                                    border : none;
+                                                    width : 100px;
+                                                    max-height : 50px;
+                                                    margin : 15px;}
+                                                    
+                QMessageBox#closeMessage QPushButton:hover {background-color : rgb(0, 0, 150);
+                                                            border : 2px solid blue;}
                 
                 """
 
@@ -249,7 +284,7 @@ dark_style_sheet_for_widgets = """
                                                                 background-color : rgb(60, 60, 60);
                                                                 color : white;
                                                                 max-width : 220px;
-                                                                font-size : 16px;
+                                                                font-size : 14px;
                                                                 padding : 5px;
                                                                 border : none;
                                                                 border-top-right-radius : 10px;
@@ -257,9 +292,8 @@ dark_style_sheet_for_widgets = """
                                                                 border-top-left-radius : 0px;
                                                                 border-bottom-left-radius : 0px;}
                                                                                                     
-                                QPushButton#switchButtonLeft:checked, QPushButton#switchButtonRight:checked {background-color : rgb(240, 60, 6);
-                                                                                                                color  : black;
-                                                                                                                font-weight : bold}
+                                QPushButton#switchButtonLeft:checked, QPushButton#switchButtonRight:checked {background-color : blue;
+                                                                                                                color  : black}
                                                                                                     
                                 QLineEdit#titleEdit {background : none;
                                                     border : 1px solid rgb(100, 100, 100);
@@ -314,20 +348,21 @@ dark_style_sheet_for_Collection = """
                                         padding : 10px;
                                         min-width : 300px;}
                                         
-                                    QInputDialog QLabel {font-size : 18px;}
+                                    QInputDialog QLabel {font-size : 22px;}
                                         
-                                    QInputDialog QPushButton {background : none;
+                                    QInputDialog QPushButton {background : rgb(0, 0, 200);
                                         color: white;
-                                        border : 1px solid rgb(100,100, 100);
-                                        border-radius : 0px;
+                                        border : none;
+                                        margin : 5px;
+                                        border-radius : 5px;
                                         padding : 5px;
                                         font-size : 17px;}
                                         
                                 
                                          
-                                    QInputDialog QPushButton:hover {background-color : rgb(240, 60, 6);
+                                    QInputDialog QPushButton:hover {background-color : blue;
                                                 border : none;
-                                                color : black}
+                                                color : white}
                                     
                                     QWidget#collectionBaseWidget {background-color : rgb(10, 10, 10);
                                     background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 20), stop : 1 rgb(0, 0, 100));
@@ -339,7 +374,8 @@ dark_style_sheet_for_Collection = """
                                     QWidget#collectionBaseWidgetSelected {background-color : rgb(0, 50, 200);
                                     background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 100), stop : 1 rgb(0, 0, 240));
                                                                     border-left : 8px solid rgb(0, 240, 66);
-                                                                    border-radius : 5px;}
+                                                                    border-radius : 5px;
+                                                                    color  : white}
                                                                     
                                    
                                                                     
@@ -433,11 +469,11 @@ status_style_sheet_dark = """
                                         
                         QLabel#dataLabel  {font-size : 15px;
                                             font-family : Hack;
-                                            color : rgb(0, 100, 240);
+                                            color : white;
                                             alignment : right}
                                             
-                        QLabel#titleLabel {font-size : 17px;
-                                            color : white;
+                        QLabel#titleLabel {font-size : 18px;
+                                            color : blue;
                                             alignment : left}
                                             
                         QLabel {font-size : 16px;
@@ -450,11 +486,17 @@ status_style_sheet_dark = """
 
 
 root_collection_dark_style_sheet = """
-                                    QLabel#titleLabel {color : rgb(0, 150, 200);
+                                    QLabel#titleLabel {color : rgb(0, 0 , 255);
                                                         font-size : 20px;
                                                         margin : 0px;}
                                                         
                                     QLabel#descriptionLabel {font-size : 16px;}
+                                    
+                                    QLabel#rootLabel {background-color : rgb(0, 0, 150);
+                                                    padding  10px;
+                                                    margin : 0px;
+                                                    border-radius : 3px;
+                                                    }
                                     
                                     
                                     """
@@ -464,6 +506,7 @@ dark_style_sheet_for_status = """
                                 
                                 QPushButton#closeButton {background-color : rgb(250, 50, 0);
                                                         padding : 5px;
+                                                        alignment : center;
                                                         color : white;
                                                         border : none;
                                                         font-size : 16px;
