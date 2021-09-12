@@ -1,18 +1,28 @@
-# This is a sample Python script
+# this is the main file in the project
+
 import json
 import os, sqlite3
 import shutil
 import sys, random, threading
-from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
-from status_widgets import FullStatusWidget
-from book_space import BookArea
+
 
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QProgressBar
-from librarayWidgets import boxCollectionWidget, listCollectionWidget, switchButton, collectionWidget, rootCollectionWidget ,StatusWidget, favoriteListModel, RecentItemModel,listBookWidget, boxBookWidget
-from dialogs import newCollectionDialog
+
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit
 from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
+# import the custom modules
+from dialogs import newCollectionDialog
+from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
+from libraray_widgets.status_widgets import FullStatusWidget
+from book_space import BookArea
+# import the widgets modules
+from models import favoriteListModel, RecentItemModel
+from libraray_widgets.book_widgets import listBookWidget, boxBookWidget
+from libraray_widgets.collection_widgets import listCollectionWidget, boxCollectionWidget
+from libraray_widgets.other_widgets import *
+from libraray_widgets.status_widgets import *
+
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
@@ -46,6 +56,18 @@ def refreshDataBase(db_file):
 
     for id in ids:
         cursor.execute(f"DELETE FROM book_table WHERE book_id = '{id}' ")
+
+    # refresh the favorites json file
+    with open("db/favorite.json") as file:
+        favorites = json.load(file)
+
+    newFavorites = []
+    for item in favorites:
+        if not(item['type'] == "book" and item['id'] in  ids):
+            newFavorites.append(item)
+
+    with open("db/favorite.json", "w") as file:
+        json.dump(newFavorites, file, indent=4)
 
     # save the changes and close the connection
     connection.commit()
@@ -208,8 +230,6 @@ class LibraryMangementSystem(QMainWindow):
         # show the window in the screen
         self.show()
 
-        self.refreshDataBase()
-
     def setUpWidgets(self):
 
         # create the various widgets and layout it
@@ -307,9 +327,27 @@ class LibraryMangementSystem(QMainWindow):
         self.resetAction.setStatusTip("Reset the Entire System")
         self.resetAction.triggered.connect(self.resetSystem)
 
+        # create the refresh action
+        self.refreshAction = QAction("Refresh DataBase", self)
+        self.refreshAction.setStatusTip("Refresh the Data Base files and all of the data files with removing the unwanted files")
+        self.refreshAction.triggered.connect(self.refreshDataBase)
+
         # add to the file menu
         self.fileMenu.addAction(self.resetAction)
+        self.fileMenu.addAction(self.refreshAction)
         self.fileMenu.addAction(self.exitAction)
+
+
+
+        # creat ehte view menu
+        self.view_menu = QMenu("View")
+        self.menuBar.addMenu(self.view_menu)
+
+        # create the action for view menu
+        self.viewFavoriteAction = QAction("Show Favorite JSON File (for developing purpose)", self)
+        self.viewFavoriteAction.triggered.connect(self.viewFavoriteJSON)
+
+        self.view_menu.addAction(self.viewFavoriteAction)
 
     def resetSystem(self):
 
@@ -318,7 +356,18 @@ class LibraryMangementSystem(QMainWindow):
         message = QMessageBox.warning(self, "Reset Warning", "Do you want to Reset System. It Will be remove the all of the data basese and other files form the system", QMessageBox.StandardButton.Ok|QMessageBox.StandardButton.Cancel)
 
         if message == QMessageBox.StandardButton.Ok:
-            pass
+            # remove the all of the data base folder files
+            os.rmdir("db")
+            # remove the all of the images files
+            for file in os.listdir("images"):
+                if file != "sys_images":
+                    os.remove(file)
+
+            # propmt the message box
+            msg = QMessageBox.information(self, "Reset System Message Box", "System Reset Successfully finished.", QMessageBox.StandardButton.Ok)
+            # update the current path and open new home page
+            self.currentPath = ""
+            self.openNewPage(self.currentPath)
 
     def setUpTitleBarWidget(self):
 
@@ -736,6 +785,8 @@ class LibraryMangementSystem(QMainWindow):
         self.reminderWidget.setLayout(self.reminderLyt)
 
         self.setUpStatusWidget()
+        self.setUpReminderNoteWidget()
+
 
     def hideStatusPanel(self):
 
@@ -776,6 +827,43 @@ class LibraryMangementSystem(QMainWindow):
         except:
             pass
 
+    def setUpReminderNoteWidget(self):
+
+        # crete the vbox for pack the buttons and note widgets
+        reminderAddButton = QPushButton("add Note")
+        reminderAddButton.setObjectName("reminderAddButton")
+        reminderAddButton.pressed.connect(self.addNote)
+
+        # create the vox for add the reminder notes
+        self.reminderNotesLyt = QVBoxLayout()
+        # add the button to the vbox
+        self.reminderNotesLyt.addWidget(reminderAddButton)
+
+        # create the scroll area for this
+        scroll_area = QScrollArea()
+        # create the scroll widget
+        scrollWidget = QWidget()
+        scrollWidget.setLayout(self.reminderNotesLyt)
+
+        scroll_area.setWidget(scrollWidget)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+
+        # create the temp v box for pack  the scroll_rae
+        vbox = QVBoxLayout()
+        vbox.addWidget(scroll_area)
+
+        self.reminderNoteWidget.setLayout(vbox)
+
+    def addNote(self):
+
+        # create the new note widget
+        noteWidget = QTextEdit()
+        noteWidget.setMaximumWidth(300)
+        noteWidget.setObjectName("reminderNote")
+
+        self.reminderNotesLyt.addWidget(noteWidget, alignment=Qt.AlignTop)
 
     def setUpStatusWidget(self):
 
@@ -985,7 +1073,7 @@ class LibraryMangementSystem(QMainWindow):
                                                           i = collection_widget.collection_id , p = collection_widget.pw : self.openNewPage(e, i, p))
         collection_widget.mousePressEvent = (lambda a, e = collection_widget : self.setSelectedWidget(e))
         collection_widget.favoriteSignal.connect(self.updateFavoriteModel)
-        collectionWidget.statusSignal.connect(self.buildStatusWidget)
+        collection_widget.statusSignal.connect(self.buildStatusWidget)
 
 
 
@@ -1036,6 +1124,7 @@ class LibraryMangementSystem(QMainWindow):
                 self.rootCollectionBox.deleteLater()
             except:
                 pass
+
             self.rootCollectionBox = rootCollectionWidget(id)
             self.status_vbox.insertWidget(1, self.rootCollectionBox)
 
@@ -1441,6 +1530,25 @@ class LibraryMangementSystem(QMainWindow):
         newThread.start()
         # join with main thread
         newThread.join()
+
+    def viewFavoriteJSON(self):
+
+        user_text = ""
+        with open("db/favorite.json") as file:
+            user_text = file.read()
+
+        # create ethe new text editor
+        self.viewEditor = QTextEdit()
+        self.viewEditor.setMinimumSize(QSize(1000, 800))
+        self.viewEditor.setText(user_text)
+        self.viewEditor.setTextColor(QColor(0, 0, 255))
+        self.viewEditor.setFont(QFont('Hack', 15))
+        self.viewEditor.setReadOnly(True)
+
+        self.viewEditor.setStyleSheet("""
+                                    QTextEdit {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 20), stop : 1 rgb(0, 0, 100))}""")
+
+        self.viewEditor.show()
 
     def closeEvent(self, event) -> None:
 

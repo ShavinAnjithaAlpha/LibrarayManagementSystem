@@ -5,6 +5,11 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QColor, QFont, QPixmap
 from style_sheet import dark_style_sheet_for_status
 
+db_file = "db/data.db"
+collection_file = "db/collection.json"
+favorite_file = "db/favorite.json"
+track_file = "db/collection_tracking.json"
+
 class FullStatusWidget(QWidget):
     def __init__(self, coll_id):
         super(FullStatusWidget, self).__init__()
@@ -20,7 +25,7 @@ class FullStatusWidget(QWidget):
     def getData(self):
 
         # first get the basic data from the db
-        connect = sqlite3.connect("db/data.db")
+        connect = sqlite3.connect(db_file)
         cursor  = connect.cursor()
 
         cursor.execute(f" SELECT * FROM collection_table WHERE collection_id = '{self.collection_id}' ")
@@ -37,7 +42,7 @@ class FullStatusWidget(QWidget):
 
         # get the favorite data fromm the json file
         fav_data = []
-        with open("db/favorite.json") as file:
+        with open(favorite_file) as file:
             fav_data = json.load(file)
 
         self.data["isFavorite"] = False
@@ -48,7 +53,7 @@ class FullStatusWidget(QWidget):
 
         # open the tracking collection json file
         track_data = []
-        with open("db/collection_tracking.json") as file:
+        with open(track_file) as file:
             track_data = json.load(file)
         self.data["count"] = 0
 
@@ -62,7 +67,7 @@ class FullStatusWidget(QWidget):
 
         # get the other data from the collection json file
         coll_data = {}
-        with open("db/collection.json") as file:
+        with open(collection_file) as file:
             coll_data = json.load(file)
 
         self.data["description"] = coll_data.get(self.collection_id)["description"]

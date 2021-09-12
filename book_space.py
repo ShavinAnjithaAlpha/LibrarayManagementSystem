@@ -50,7 +50,7 @@ class BookArea(QWidget):
 
     def initializeUI(self):
 
-        self.setMinimumWidth(600)
+        self.setGeometry(0, 0, 2000, 1000)
         self.setContentsMargins(0, 0, 0, 0)
 
         # create the main layout and widgets

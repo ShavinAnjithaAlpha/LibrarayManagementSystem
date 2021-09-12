@@ -264,6 +264,19 @@ dark_style_sheet = """
                                                     
                 QMessageBox#closeMessage QPushButton:hover {background-color : rgb(0, 0, 150);
                                                             border : 2px solid blue;}
+                                                            
+                QPushButton#reminderAddButton {background-color : blue;
+                                                border : none;
+                                                padding : 5px;
+                                                color : white;
+                                                }
+                QTextEdit#reminderNote {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(150, 150, 0), stop : 1 rgb(250, 250, 0));
+                                        border : none;
+                                        padding : 5px;
+                                        color : black;
+                                        font-size : 19px;
+                                        border-top : 20px solid rgb(0, 200, 50);
+                                        min-height : 250px;}
                 
                 """
 
