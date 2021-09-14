@@ -105,6 +105,17 @@ class StatusWidget(QWidget):
         self.form.addWidget(title_label)
         self.form.addWidget(dataLabel)
 
+    def addImage(self, image_path : str , size = QSize(150, 200)):
+
+        # create the pixmap object
+        pixmap = QPixmap(image_path).scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        # create the label for stote the pix map
+        imageLabel = QLabel()
+        imageLabel.resize(size)
+        imageLabel.setPixmap(pixmap)
+        # add to te form
+        self.form.addWidget(imageLabel)
+
     def addTextArea(self, title, data):
 
         # create th text area
@@ -230,7 +241,6 @@ class rootCollectionWidget(QWidget):
         vBox.addWidget(dateTimeLabel, alignment=Qt.AlignCenter)
 
         self.setLayout(vBox)
-
 
 
 

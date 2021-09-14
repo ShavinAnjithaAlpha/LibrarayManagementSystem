@@ -5,7 +5,7 @@ import os, sqlite3
 import shutil
 import sys, random, threading
 
-
+import fitz
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
 
@@ -22,6 +22,7 @@ from libraray_widgets.book_widgets import listBookWidget, boxBookWidget
 from libraray_widgets.collection_widgets import listCollectionWidget, boxCollectionWidget
 from libraray_widgets.other_widgets import *
 from libraray_widgets.status_widgets import *
+from bookTable import bookTable
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -339,7 +340,7 @@ class LibraryMangementSystem(QMainWindow):
 
 
 
-        # creat ehte view menu
+        # create hte view menu
         self.view_menu = QMenu("View")
         self.menuBar.addMenu(self.view_menu)
 
@@ -347,7 +348,11 @@ class LibraryMangementSystem(QMainWindow):
         self.viewFavoriteAction = QAction("Show Favorite JSON File (for developing purpose)", self)
         self.viewFavoriteAction.triggered.connect(self.viewFavoriteJSON)
 
+        self.openBookTableAction = QAction("Open Book Store as TableView", self)
+        self.openBookTableAction.triggered.connect(self.openTableView)
+
         self.view_menu.addAction(self.viewFavoriteAction)
+        self.view_menu.addAction(self.openBookTableAction)
 
     def resetSystem(self):
 
@@ -363,11 +368,16 @@ class LibraryMangementSystem(QMainWindow):
                 if file != "sys_images":
                     os.remove(file)
 
-            # propmt the message box
+            # prompt the message box
             msg = QMessageBox.information(self, "Reset System Message Box", "System Reset Successfully finished.", QMessageBox.StandardButton.Ok)
             # update the current path and open new home page
             self.currentPath = ""
             self.openNewPage(self.currentPath)
+
+    def openTableView(self):
+
+        self.newTable = bookTable()
+        self.newTable.show()
 
     def setUpTitleBarWidget(self):
 
@@ -416,6 +426,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the list view
         self.favoriteListWidget = QListView()
+        self.favoriteListWidget.setAlternatingRowColors(True)
         self.favoriteListWidget.setMinimumHeight(400)
         self.favoriteListWidget.setModel(self.favoriteModel)
         self.favoriteListWidget.clicked.connect(self.goToFavorite)
@@ -968,7 +979,7 @@ class LibraryMangementSystem(QMainWindow):
     def addNewBooks(self, files : list):
 
         # calculate the time and date
-        date = QDate.currentDate().toString("dd:MM:yyyy")
+        date = QDate.currentDate().toString("dd MMM yyyy")
         time = QTime.currentTime().toString("hh:mm:ss A")
 
         # create the connection and open the cursor
@@ -1002,6 +1013,7 @@ class LibraryMangementSystem(QMainWindow):
             # connect to the slots th widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
             widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
+            widget.mousePressEvent = lambda e, a = widget : self.setSelectionWidget(a)
 
             # update the stage
             self.currentStage.addBook(widget, {"title" : os.path.split(file),
@@ -1026,7 +1038,7 @@ class LibraryMangementSystem(QMainWindow):
         img = data["image_dir"]
         # get the current time and date
         current_time = QTime.currentTime().toString("hh:mm:ss A")
-        current_date = QDate.currentDate().toString("dd:MM:yyyy")
+        current_date = QDate.currentDate().toString("dd MMM yyyy")
 
         # generate the id
         id_code = self.generateID("collection")
@@ -1290,6 +1302,7 @@ class LibraryMangementSystem(QMainWindow):
             # connect to the slots of the widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
             widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
+            widget.mousePressEvent = lambda e , a = widget : self.setSelectionWidget(a)
 
 
     def addCollectionWidgets(self, FilterData : list):
@@ -1341,16 +1354,22 @@ class LibraryMangementSystem(QMainWindow):
 
     def setSelectionWidget(self, widget):
 
-        if self.currentStage.selected_widget:
+        if self.currentStage.selected_widget and (isinstance(self.currentStage.selected_widget, listCollectionWidget) or
+                                                    isinstance(self.currentStage.selected_widget, boxCollectionWidget)):
             self.currentStage.selected_widget.baseWidget.setObjectName("collectionBaseWidget")
             self.currentStage.selected_widget.setStyleSheet(dark_style_sheet_for_Collection)
         # set thr stage selected widget as the this
+
         if isinstance(widget, boxCollectionWidget) or isinstance(widget , listCollectionWidget):
             self.currentStage.selected_widget = widget
             self.currentStage.selected_widget.baseWidget.setObjectName("collectionBaseWidgetSelected")
             self.currentStage.selected_widget.setStyleSheet(dark_style_sheet_for_Collection)
             # update the status
             self.setCollectionStatus()
+        elif isinstance(widget, listBookWidget) or isinstance(widget, boxBookWidget):
+            self.currentStage.selected_widget = widget
+            self.setBookStatus()
+
 
     def setCollectionStatus(self):
 
@@ -1394,11 +1413,45 @@ class LibraryMangementSystem(QMainWindow):
         self.statusBox = StatusWidget()
         self.status_vbox.insertWidget(0, self.statusBox)
         # fill the status box
-        self.statusBox.addLine("Title : ", widget_data["title"], wrap = True)
-        self.statusBox.addTextArea("Description : ", widget_data["des"])
+        self.statusBox.addLine("Title  ", widget_data["title"], wrap = True)
+        self.statusBox.addTextArea("Description ", widget_data["des"])
         self.statusBox.addSeperator()
         # add the created date and time
         self.statusBox.addLabel(f"Created On\n {widget_data['date']}\nAt {widget_data['time']}")
+
+    def setBookStatus(self):
+
+        book_widget = self.currentStage.selected_widget
+
+        if isinstance(book_widget, listBookWidget) or isinstance(book_widget, boxBookWidget):
+            # create the new status widget and append to the layout
+            try:
+                self.statusBox.deleteLater()
+            except:
+                pass
+            # create the new status widget
+            self.statusBox = StatusWidget()
+
+            # book directory
+            book_id = book_widget.book_id
+            with open("db/book.json") as file:
+                book_data = json.load(file)
+
+            dir = book_data.get(book_id).get("dir")
+            del book_data
+
+            # get the book cover image
+            cover_image = self.getCoverImage(dir)
+
+            self.statusBox.addImage(cover_image)
+
+            self.statusBox.addLabel("Name ")
+            self.statusBox.addLabel(book_widget.title)
+
+            self.statusBox.addLabel("Size ")
+            self.statusBox.addLabel("{:.2f} MB".format((os.stat(dir).st_size/1024/1024)))
+
+            self.status_vbox.insertWidget(0, self.statusBox)
 
     def openBookSpace(self, book_id : str):
 
@@ -1500,6 +1553,27 @@ class LibraryMangementSystem(QMainWindow):
 
         connection.close()
         return code
+
+    def getCoverImage(self, dir):
+
+        doc = fitz.Document(dir)
+        pix = doc.load_page(0).get_pixmap()
+
+        image_dir = f"db/temp/coverImage{LibraryMangementSystem.getIdentifire()}.png"
+        pix.save(image_dir)
+
+        return image_dir
+
+    @staticmethod
+    def getIdentifire():
+
+        length = 7
+        index_str = ""
+
+        for i in range(length):
+            index_str += random.choice(chrs)
+
+        return index_str
 
     def getTheme(self):
 
