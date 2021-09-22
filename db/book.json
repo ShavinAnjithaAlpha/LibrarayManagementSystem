@@ -91,7 +91,64 @@
         "dir": "D:/Library/Physics/Quantum Mechnism/study-notes-for-statistical-physics.pdf"
     },
     "taqri": {
-        "dir": "D:/Library/Physics/Quantum Mechnism/The Feynman Lectures on Physics, Vol. I The New Millennium Edition Mainly Mechanics, Radiation, and Heat by Richard P. Feynman, Robert B. Leighton, Matthew Sands (z-lib.org).pdf"
+        "dir": "D:/Library/Physics/Quantum Mechnism/The Feynman Lectures on Physics, Vol. I The New Millennium Edition Mainly Mechanics, Radiation, and Heat by Richard P. Feynman, Robert B. Leighton, Matthew Sands (z-lib.org).pdf",
+        "history": [
+            [
+                45,
+                "thi sis the first read",
+                "21 Sep 2021",
+                "07:57:58 PM"
+            ],
+            [
+                78,
+                "this is the second reading",
+                "21 Sep 2021",
+                "07:58:13 PM"
+            ],
+            [
+                111,
+                "this is the thrid page.",
+                "21 Sep 2021",
+                "08:02:37 PM"
+            ]
+        ],
+        "bookmarks": [
+            [
+                44,
+                "thi sis the first bookmark.",
+                "21 Sep 2021",
+                "07:58:31 PM"
+            ],
+            [
+                444,
+                "thsi is the second bookmark",
+                "21 Sep 2021",
+                "07:58:48 PM"
+            ],
+            [
+                4444,
+                "this is thrid bookmark.",
+                "21 Sep 2021",
+                "08:03:09 PM"
+            ]
+        ],
+        "comment": [
+            [
+                "thisi isi my first comment\n",
+                "21 Sep 2021",
+                "08:03:46 PM"
+            ],
+            [
+                "this si my second comment",
+                "21 Sep 2021",
+                "08:03:57 PM"
+            ],
+            [
+                "thisiis my thrid comment",
+                "21 Sep 2021",
+                "08:04:06 PM"
+            ]
+        ]
     },
     "ga1ex": {
         "dir": "D:/Library/Physics/Quantum Mechnism/The Science of Interstellar by Kip Thorne, Christopher Nolan (z-lib.org).pdf"
@@ -220,7 +277,15 @@
         "dir": "D:/Library/Physics/Realtivity and Cosmology/documentation_v1.8.pdf"
     },
     "cdwqj": {
-        "dir": "D:/Library/Physics/Realtivity and Cosmology/Einstein_Relativity.pdf"
+        "dir": "D:/Library/Physics/Realtivity and Cosmology/Einstein_Relativity.pdf",
+        "bookmarks": [
+            [
+                44,
+                "thisi si the first BK.",
+                "21 Sep 2021",
+                "08:23:57 PM"
+            ]
+        ]
     },
     "r6b8f": {
         "dir": "D:/Library/Physics/Realtivity and Cosmology/Einsteins general theory of relativity by \u00d8yvind Gr\u00f8n, Sigbjorn Hervik (z-lib.org).pdf"
@@ -261,7 +326,15 @@
         "dir": "D:/Library/Physics/Realtivity and Cosmology/relativity (1).pdf"
     },
     "9hot3": {
-        "dir": "D:/Library/Physics/Realtivity and Cosmology/Relativity The Special and the General Theory by Albert Einstein, Roger Penrose, Robert Geroch, David C. Cassidy (z-lib.org).pdf"
+        "dir": "D:/Library/Physics/Realtivity and Cosmology/Relativity The Special and the General Theory by Albert Einstein, Roger Penrose, Robert Geroch, David C. Cassidy (z-lib.org).pdf",
+        "history": [
+            [
+                12,
+                "read the book\n",
+                "19 Sep 2021",
+                "02:04:12 PM"
+            ]
+        ]
     },
     "c7dsg": {
         "dir": "D:/Library/Physics/Realtivity and Cosmology/relativity.pdf"
@@ -320,17 +393,26 @@
     "dgkxh": {
         "dir": "D:/Library/Chemistry/D block/f_block.pdf"
     },
-    "excdf": {
-        "dir": "D:/Library/Chemistry/D block/ic3.pdf"
-    },
     "7erzb": {
         "dir": "D:/Library/Chemistry/D block/Inorganic_Chapter20.pdf"
     },
     "cabmt": {
-        "dir": "D:/Library/Chemistry/D block/ISBN 978-93-84648-97-8.pdf"
-    },
-    "wusgq": {
-        "dir": "D:/Library/Chemistry/Atomic Structure/9783642147364-c1.pdf"
+        "dir": "D:/Library/Chemistry/D block/ISBN 978-93-84648-97-8.pdf",
+        "history": [
+            [
+                11,
+                "thisis first page.",
+                "21 Sep 2021",
+                "08:17:50 PM"
+            ]
+        ],
+        "comment": [
+            [
+                "this si the sirst cmment.",
+                "21 Sep 2021",
+                "08:18:17 PM"
+            ]
+        ]
     },
     "1luai": {
         "dir": "D:/Library/Chemistry/Atomic Structure/atomistic-models.pdf"
@@ -340,15 +422,6 @@
     },
     "l2qkj": {
         "dir": "D:/Library/Chemistry/Atomic Structure/Dipole_moments.pdf"
-    },
-    "ywoue": {
-        "dir": "D:/Library/Chemistry/Atomic Structure/kech102.pdf"
-    },
-    "jzxnj": {
-        "dir": "D:/Library/Chemistry/Atomic Structure/restlectures.pdf"
-    },
-    "h6qbh": {
-        "dir": "D:/Library/Chemistry/Atomic Structure/set1.pdf"
     },
     "twzbb": {
         "dir": "D:/Library/Physics/Physics TextBooks and Modern Physics/9780321696861_university_physics_with_modern_physics_c2cc.pdf"

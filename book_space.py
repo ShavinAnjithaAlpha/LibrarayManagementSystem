@@ -16,6 +16,7 @@ class BookArea(QWidget):
         super(BookArea, self).__init__()
         self.book_id = book_id
         self.dir , self.des = "", ""
+
         self.loadPDF()
         self.initializeUI()
 
@@ -56,6 +57,7 @@ class BookArea(QWidget):
         # create the main layout and widgets
         # create the history widget
         self.historyWidget = BookHistoryWidget(self.book_id)
+        self.historyWidget.setContentsMargins(0, 0, 0, 0)
         self.historyWidget.setObjectName("historyWidget")
 
         # create the other space widget
@@ -63,6 +65,7 @@ class BookArea(QWidget):
         # create the h box for pack the widgets
         hbox1 = QHBoxLayout()
         hbox1.setSpacing(0)
+        hbox1.setContentsMargins(0, 0, 0, 0)
         hbox1.addWidget(otherSpace)
         hbox1.addWidget(self.historyWidget)
 
@@ -72,14 +75,16 @@ class BookArea(QWidget):
         self.topLyt = QGridLayout()
         # create the widget for top layout
         topWidget = QWidget()
+        topWidget.setContentsMargins(0, 0, 0, 0)
         topWidget.setLayout(self.topLyt)
 
         # create the h splitter
         self.splitter = QSplitter(Qt.Horizontal)
-
+        self.splitter.setContentsMargins(0, 0, 0, 0)
         # create the bookmark widget
         self.bookMarkWidget = BookMarkWidget(self.book_id)
         self.bookMarkWidget.setObjectName("bookMarkWidget")
+        self.bookMarkWidget.setContentsMargins(0, 0, 0, 0)
 
         # add to the v box
         otherSpace.addWidget(topWidget)
@@ -166,6 +171,7 @@ class BookArea(QWidget):
 
         # create the h box for pack the widgets
         hbox1 = QHBoxLayout()
+        hbox1.setContentsMargins(0, 0, 0, 0)
         hbox1.addWidget(titleLabel)
         hbox1.addWidget(addButton)
 
@@ -175,10 +181,12 @@ class BookArea(QWidget):
 
         # widgdet for scroll area
         scrollWidget = QWidget()
+        scrollWidget.setContentsMargins(0, 0, 0, 0)
         scrollWidget.setObjectName("bookCommentWidget")
         scrollWidget.setLayout(self.commentLyt)
         # create the scroll area
         scrollArea = QScrollArea()
+        scrollArea.setContentsMargins(0, 0, 0, 0)
         scrollArea.setWidgetResizable(True)
         scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -187,6 +195,7 @@ class BookArea(QWidget):
         # create the main v box layout
         mainVBox = QVBoxLayout()
         mainVBox.setSpacing(0)
+        mainVBox.setContentsMargins(0, 0, 0, 0)
         mainVBox.addLayout(hbox1)
         mainVBox.addWidget(scrollArea)
 
@@ -220,6 +229,7 @@ class BookArea(QWidget):
         # create the main v box layout
         mainVBox = QVBoxLayout()
         mainVBox.setSpacing(0)
+        mainVBox.setContentsMargins(0, 0, 0, 0)
         mainVBox.addWidget(titleLabel)
         mainVBox.addWidget(scrollArea)
         mainVBox.addStretch()
@@ -328,6 +338,9 @@ class BookHistoryWidget(QWidget):
 
         self.setMinimumWidth(300)
         self.setMaximumWidth(450)
+        self.setMinimumHeight(800)
+        self.setContentsMargins(0, 0, 0, 0)
+
         self.initializeUI()
         self.loadHistory()
 
@@ -346,6 +359,8 @@ class BookHistoryWidget(QWidget):
 
         # create the h box for pack the widgets
         hbox1 = QHBoxLayout()
+        hbox1.setSpacing(0)
+        hbox1.setContentsMargins(0, 0, 0, 0)
         hbox1.addWidget(titleLabel)
         hbox1.addWidget(addButton)
 
@@ -356,37 +371,47 @@ class BookHistoryWidget(QWidget):
         scrollBar.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scrollBar.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        # create the vboxo for labels
+        # create the vbox for labels
         self.pageLabelBox = QVBoxLayout()
         self.pageLabelBox.setSpacing(0)
+        self.pageLabelBox.setContentsMargins(0, 0, 0, 0)
 
-        # create the acroll widget
+        # create the scroll widget
         scrollWidget = QWidget()
+        scrollWidget.setMinimumHeight(self.height())
+        scrollWidget.setContentsMargins(0, 0, 0, 0)
         scrollWidget.setLayout(self.pageLabelBox)
-        scrollWidget.setObjectName("historyWidget")
+        scrollWidget.setObjectName("historyWidget2")
 
         scrollBar.setWidget(scrollWidget)
+        scrollBar.setContentsMargins(0, 0, 0, 0)
 
 
 
         # create the main v box layout
         mainVBox = QVBoxLayout()
         mainVBox.setSpacing(0)
+        mainVBox.setContentsMargins(0, 0, 0, 0)
         mainVBox.addLayout(hbox1)
         mainVBox.addWidget(scrollBar)
 
         # create the base widget
         baseWidget = QWidget()
+        baseWidget.setContentsMargins(0, 0, 0, 0)
         baseWidget.setLayout(mainVBox)
         baseWidget.setObjectName("historyWidget")
 
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
         vbox.addWidget(baseWidget)
 
 
         self.setLayout(vbox)
 
     def loadHistory(self):
+
+        self.pageLabelBox.insertWidget(0, QLabel())
+        self.pageLabelBox.addStretch()
 
         with open("db/book.json") as file:
             user_data = json.load(file)
@@ -419,7 +444,7 @@ class BookHistoryWidget(QWidget):
         label = pageHistoryLabel(page, comment, date, time)
         self.labels.append(label)
         # add to the vbox
-        self.pageLabelBox.addWidget(label)
+        self.pageLabelBox.insertWidget(0, label)
         # update the file
 
     def updateFile(self, page, comment, date, time):
@@ -467,15 +492,19 @@ class BookMarkWidget(QWidget):
 
         # create the h box
         hbox = QHBoxLayout()
+        hbox.setSpacing(0)
+        hbox.setContentsMargins(0, 0, 0, 0)
         hbox.addWidget(titleLabel)
         hbox.addWidget(addButton)
 
         # create the main v box
         self.bookmarkLyt = QVBoxLayout()
         self.bookmarkLyt.setSpacing(0)
+        self.bookmarkLyt.setContentsMargins(0, 0, 0, 0)
 
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
+        vbox.setContentsMargins(0, 0, 0, 0)
         vbox.addLayout(self.bookmarkLyt)
         vbox.addStretch()
 
@@ -580,6 +609,9 @@ class pageHistoryLabel(QWidget):
 
         baseWidget.setLayout(vbox)
 
+    def sizeHint(self) -> QSize:
+        return QSize(300, 100)
+
 class CommentLabel(QWidget):
 
     colors = ["red", "blue", "rgb(50, 0, 50)", "rgb(70, 0, 100)"]
@@ -667,6 +699,7 @@ class bookMarkLabel(QWidget):
         # pack the labels
         hbox = QHBoxLayout()
         hbox.setSpacing(0)
+        hbox.setContentsMargins(0, 0, 0, 0)
         hbox.addWidget(numberLabel)
         hbox.addWidget(pageNumberLabel)
         hbox.addWidget(commentLabel)

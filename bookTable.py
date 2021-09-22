@@ -1,23 +1,32 @@
 import os.path
-import random
+import random, fitz
 import sys, json ,sqlite3
-from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QLabel, QLineEdit, QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QLabel, QLineEdit, QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox, QSplitter
 from PyQt5.QtGui import QFont, QColor, QImage, QIcon, QPixmap
 from PyQt5.Qt import QSize, Qt, QAbstractTableModel , QModelIndex, QHeaderView
 # import the book Space widgets
 from book_space import BookArea
+from libraray_widgets.other_widgets import StatusWidget
+from style_sheet import dark_theme_for_table
 
 db_file = "db/data.db"
 book_file = "db/book.json"
 favorite_file = "db/favorite.json"
 
+chrs = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "w", "x", "y", "z",
+        "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
 class bookTable(QWidget):
+
+    temp_imgs = []
 
     def __init__(self):
         super(bookTable, self).__init__()
         self.setGeometry(0, 0, 2000, 1000)
         self.initializeUI()
         self.setUpToolBar()
+
+        self.setStyleSheet(dark_theme_for_table)
 
     def initializeUI(self):
 
@@ -33,6 +42,7 @@ class bookTable(QWidget):
         self.table_view.verticalHeader().sectionDoubleClicked.connect(self.openBook)
         self.table_view.verticalHeader().sectionClicked.connect(self.displayBook)
         self.table_view.doubleClicked.connect(self.openBookFromCell)
+        self.table_view.clicked.connect(lambda e : self.displayBook(e.row()))
 
         # table_view.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
@@ -46,7 +56,26 @@ class bookTable(QWidget):
         vbox.addLayout(self.toolBarLyt)
         vbox.addWidget(self.table_view)
 
-        self.setLayout(vbox)
+        # create the two widget for table view and display view
+        tableWidget = QWidget()
+        displayWIdget = QWidget()
+        # initiate the book data display widget
+        self.book_data_display_widget = None
+        # crate the display widget layout
+        self.displayWidgetLyt = QVBoxLayout()
+
+        tableWidget.setLayout(vbox)
+        displayWIdget.setLayout(self.displayWidgetLyt)
+
+        # create the splitter for split the table and display windowo
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.addWidget(tableWidget)
+        self.splitter.addWidget(displayWIdget)
+
+        # create the parent layout
+        parent_lyt = QHBoxLayout()
+        parent_lyt.addWidget(self.splitter)
+        self.setLayout(parent_lyt)
         self.show()
 
     def setUpToolBar(self):
@@ -54,7 +83,9 @@ class bookTable(QWidget):
 
         # create the search bar for tableview Model
         self.searchBar = QLineEdit()
-        self.searchBar.resize(250, 30)
+        self.searchBar.resize(250, 50)
+        self.searchBar.setTextMargins(5, 5, 5, 5)
+        self.searchBar.setFont(QFont('verdana', 13))
         self.searchBar.textChanged.connect(self.searchBooks)
 
         searchLabel = QLabel("search books")
@@ -62,11 +93,11 @@ class bookTable(QWidget):
         # crate the sort combo box
         sortLabel = QLabel("Sort")
         self.sort_comboBox = QComboBox()
-        self.sort_option = {"sort By Name" : 0,
-                            "sort by Size" : 4,
-                            "sor By Index" : 1,
-                            "sort By Path" : 2,
-                            "sort By added Date" : 3}
+        self.sort_comboBox.setCurrentText("Sort")
+        self.sort_option = {"Book Name" : 0,
+                            "Size" : 1,
+                            "Path" : 2,
+                            "Added Date" : 3}
         for key, value in self.sort_option.items():
             self.sort_comboBox.addItem(key, value)
         self.sort_comboBox.currentTextChanged.connect(self.changeSortings)
@@ -90,15 +121,14 @@ class bookTable(QWidget):
         sort_id = self.sort_option.get(option)
 
         if sort_id == 0:
-            self.model._data.sort(key = lambda e : e[1])
-        elif sort_id == 1:
             self.model._data.sort(key = lambda e : e[0])
-        elif sort_id == 2:
+        elif sort_id == 1:
             self.model._data.sort(key = lambda e : e[2])
+        elif sort_id == 2:
+            self.model._data.sort(key = lambda e : e[1])
         elif sort_id == 3:
-            self.model._data.sort(key = lambda e : e[5])
-        elif sort_id == 4:
-            self.model._data.sort(key = lambda e : e[3])
+            self.model._data.sort(key = lambda e : e[4])
+
         self.model.layoutChanged.emit()
 
     def openBookFromCell(self, index : QModelIndex):
@@ -119,18 +149,79 @@ class bookTable(QWidget):
     def displayBook(self, index):
 
         row_data = self.model._data[index]
-        book_name = row_data[1]
-        size = row_data[3]
+        book_path = row_data[3]
+        book_name = row_data[0]
+        size = row_data[2]
+        path = row_data[1]
 
-        print(f"{book_name} size = {size}")
+        try:
+            self.book_data_display_widget.deleteLater()
+        except:
+            pass
+
+        # create the new display widget
+        self.book_data_display_widget = StatusWidget()
+        self.book_data_display_widget.setMaximumHeight(1500)
+        # add the image  and pass the image size
+        self.book_data_display_widget.addImage(self.getImage(book_path), QSize(400, 800))
+        # set the title
+        self.book_data_display_widget.addLine("Book Name ", book_name, True)
+        self.book_data_display_widget.addLine("Size ", "{:.2f} MB".format(size))
+        # add the path of the book
+        self.book_data_display_widget.addLine("Path ", path, wrap=True)
+        self.book_data_display_widget.addLine("Sys Path ", book_path, wrap = True)
+
+        # add to the display layout
+        self.displayWidgetLyt.addWidget(self.book_data_display_widget)
+
+    def getImage(self, doc_dir : str):
+
+        document  = fitz.Document(doc_dir)
+        page = document.load_page(0)
+
+        coverImage = page.get_pixmap()
+        # save the image and return the image path
+        image_path = f"db/temp/tableViewCoverImage{bookTable.getIdentifire()}.png"
+        self.temp_imgs.append(image_path)
+
+        coverImage.save(image_path)
+        return image_path
+
+    @staticmethod
+    def getIdentifire():
+
+        length = 7
+        index_str = ""
+
+        for i in range(length):
+            index_str += random.choice(chrs)
+
+        return index_str
+
+    def closeEvent(self, event) -> None:
+
+        # remove the temp page images
+        for path in self.temp_imgs:
+            try:
+                os.remove(path)
+            except FileNotFoundError:
+                print("Cannot find the File")
+            except PermissionError:
+                print("cannot delete the file bacause permission not getted")
+            except OSError:
+                print("OS error")
+            except Exception:
+                print("Cannot delete because another error")
 
 
+# end of the UI Window
 
 class TableModel(QAbstractTableModel):
 
     lock_image = "images/sys_images/lock.png"
     fav_image = "images/sys_images/fillStar.png"
     un_fav_image = "images/sys_images/nonFillStar.png"
+    unlock_image = "images/sys_images/unlock.png"
 
     COLORS = ['#053061', '#2166ac', '#4393c3', '#92c5de', '#d1e5f0',
               '#f7f7f7', '#fddbc7', '#f4a582', '#d6604d', '#b2182b', '#67001f']
@@ -151,6 +242,10 @@ class TableModel(QAbstractTableModel):
 
         cursor.execute("SELECT * FROM book_table")
         db_data = cursor.fetchall()
+
+        # load the path data from the collection table
+        cursor.execute("SELECT path , name FROM collection_table")
+        self.coll_data = cursor.fetchall()
 
         connection.close()
 
@@ -182,7 +277,9 @@ class TableModel(QAbstractTableModel):
                     isFav = True
                     break
             # append to the self._data
-            self._data.append([i , name , path , size ,dir , f"{date} at {time}", mod_date , pw, isFav, book_id])
+            self._data.append([name , self.getStringPath(path) , size ,dir , f"{date} at {time}", mod_date , pw, isFav, book_id])
+
+
 
 
     @staticmethod
@@ -195,37 +292,37 @@ class TableModel(QAbstractTableModel):
 
         if role == Qt.DisplayRole:
 
-            if column == 7:
+            if column == 6:
                 if self._data[row][column] == "":
                     return "UnSecured"
                 else:
                     return "Secured"
-            elif column == 8:
+            elif column == 7:
 
                 if self._data[row][column]:
                     return "yes"
                 else:
                     return "no"
-            elif column == 3:
+            elif column == 2:
                 return "{:.2f} MB".format(self._data[row][column])
 
             return  self._data[row][column]
 
         elif role == Qt.BackgroundRole:
 
-            if column == 11:
+            if column == 10:
                 if self._data[row][column] == "":
                     return QColor(255, 0, 0)
                 else:
                     return QColor(0, 255, 0)
-            elif column == 2:
+            elif column == 1:
                 level = len(self._data[row][column].split("/")) - 2
                 return self.level_color[level]
 
             elif column == 0:
                 return QColor(0, 0, random.randint(0, 100))
 
-            elif column == 3:
+            elif column == 2:
                 value = int(self._data[row][column])
 
                 value = max(value, -5)
@@ -236,13 +333,13 @@ class TableModel(QAbstractTableModel):
 
         elif role == Qt.DecorationRole:
 
-            if column == 7:
+            if column == 6:
                 if self._data[row][column] != "":
                     return QIcon(self.lock_image)
                 else:
-                    return QColor(200, 0, 0)
+                    return QIcon(self.unlock_image)
 
-            elif column == 8:
+            elif column == 7:
                 if self._data[row][column]:
                     return QIcon(self.fav_image)
                 else:
@@ -256,13 +353,32 @@ class TableModel(QAbstractTableModel):
     def columnCount(self, parent: QModelIndex) -> int:
         return len(self._data[0])
 
+    def getStringPath(self, int_path : str):
+
+        root_path = "/"
+        str_path = ""
+
+        split_path = int_path.split("/")
+        for i in split_path:
+            if i != "":
+                root_path += f"{i}/"
+                # get the coll data path
+                for j in self.coll_data:
+                    if j[0] == root_path:
+                        plus_path = j[1]
+                        break
+
+                str_path += f"{plus_path}/"
+
+        return str_path[:-1]
 
 if __name__ == "__main__":
     app = QApplication([])
     window = bookTable()
 
     app.setStyleSheet("""
-    
+            
+                    
                     QTableView {background-color : rgb(20, 20, 20);
                                 color : white;}
                                 """)

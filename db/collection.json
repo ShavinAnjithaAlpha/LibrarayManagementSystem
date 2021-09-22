@@ -15,7 +15,7 @@
         "image_dir": "images\\macos-mojave-1440x2560-night-dunes-wwdc-2018-4k-18883.jpg"
     },
     "rprzc": {
-        "title": "Languages",
+        "title": "Computor Languages",
         "description": "Aboutu the Different Computor Languages such as Python, Java, C++, C#, C, JavaScript, HTML, CSS\n",
         "image_dir": "images\\wp4048674-java-wallpapers.jpg"
     },
@@ -53,11 +53,6 @@
         "title": "Python",
         "description": "",
         "image_dir": "images\\wp3105546-python-wallpapers.png"
-    },
-    "qwy2b": {
-        "title": "Java of Oracle",
-        "description": "",
-        "image_dir": "images\\307912_dark-abstract-wallpaper - Copy.jpg"
     },
     "rparp": {
         "title": "C++ and C#",
@@ -138,5 +133,35 @@
         "title": "Phsyics Text Books",
         "description": "",
         "image_dir": "images\\Setapp.png"
+    },
+    "yefo5": {
+        "title": "Sexy Books",
+        "description": "About the Sexy Imaegs and Books",
+        "image_dir": "images/sys_images/coll_img1.png"
+    },
+    "okbkj": {
+        "title": "sex1",
+        "description": "",
+        "image_dir": "images\\1622047852189.jpg"
+    },
+    "imzng": {
+        "title": "sex2",
+        "description": "",
+        "image_dir": "images\\1622047630429.jpg"
+    },
+    "uykr8": {
+        "title": "sex3",
+        "description": "",
+        "image_dir": "images\\613e7c9d81bd29345d7a9433fa0aedf7.jpg"
+    },
+    "xz471": {
+        "title": "sex4",
+        "description": "",
+        "image_dir": "images\\1daf784022316edd5e1b3e60f492eb63.jpg"
+    },
+    "xnm89": {
+        "title": "My Articles",
+        "description": "",
+        "image_dir": "images/sys_images/coll_img1.png"
     }
 }

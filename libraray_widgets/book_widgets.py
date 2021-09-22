@@ -1,6 +1,7 @@
 import json, sqlite3, random, fitz
-from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QFormLayout, QMessageBox)
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QFormLayout, QMessageBox, QMenu, QAction, QLineEdit,
+                             QInputDialog)
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QRect
 from PyQt5.QtGui import QPixmap, QIcon,  QKeyEvent
 # import the styles
 from style_sheet import dark_style_sheet_for_Collection
@@ -18,12 +19,13 @@ class bookWidget(QWidget):
     # defined the new signal for book widget
     favoriteSignal = pyqtSignal(list)
 
-    def __init__(self, title, book_id, path):
+    def __init__(self, title, book_id, path, pw = ""):
         super(bookWidget, self).__init__()
         # declare the instance variables
         self.title = title
         self.book_id = book_id
         self.path = path
+        self.pw = pw
 
         self.setStyleSheet(dark_style_sheet_for_Collection)
 
@@ -58,6 +60,73 @@ class bookWidget(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(self.baseWidget)
         self.setLayout(vbox)
+
+
+    def contextMenuEvent(self, event) -> None:
+
+        # create the menu
+        self.menu = QMenu(self)
+
+        # create the menu option for this
+        openAction = QAction("Open", self)
+        openAction.triggered.connect(self.mouseDoubleClickEvent)
+
+        pwAction = QAction("set password", self)
+        pwAction.triggered.connect(self.changePassword)
+
+        # create the delete action
+        deleteAction = QAction("delete", self)
+        deleteAction.triggered.connect(self.delete)
+
+        self.menu.addAction(openAction)
+        self.menu.addAction(pwAction)
+        self.menu.addAction(deleteAction)
+
+        self.menu.exec_(self.mapToGlobal(event.pos()))
+
+    def changePassword(self):
+
+        check = False
+        subCheck = False
+        # get the new password from the text box
+        if self.pw != "":
+            # reconfirm the password
+            pw, ok = QInputDialog.getText(self, "Password Prompt", "Enter the Password : ", echo=QLineEdit.Password)
+            if ok and pw == self.pw:
+                subCheck = True
+            else:
+                QMessageBox.warning(self, "Warning", "Password You Entered is Wrong! Please Enter Correct Password")
+
+        else:
+            subCheck = True
+
+        # get the new pw from the user
+        if subCheck:
+            # get the new pw from the user
+            new_pw, ok2 = QInputDialog.getText(self, "New Password Dialog", "Enter the New Password : ",
+                                               echo=QLineEdit.Password)
+            if ok2:
+                # confirm the password from the user
+                confirm_pw, ok3 = QInputDialog.getText(self, "Confirm Password Dialog", "Confirm the Password : ",
+                                                       echo=QLineEdit.Password)
+                if ok3 and confirm_pw == new_pw:
+                    check = True
+                else:
+                    QMessageBox.warning(self, "Warning",
+                                        "Confirm Password is not correct...Please Enter the Correct Password")
+
+        if check:
+            # change the password from the data base and current widget
+            self.pw = new_pw
+            # create the connection to the data base
+            connection = sqlite3.connect(db_file)
+            cursor = connection.cursor()
+
+            cursor.execute(
+                f" UPDATE book_table SET pw = '{self.pw}' WHERE book_id = '{self.book_id}'  ")
+            # save the changes
+            connection.commit()
+            connection.close()
 
     def keyPressEvent(self, event : QKeyEvent) -> None:
 
@@ -110,9 +179,11 @@ class bookWidget(QWidget):
                         "type" : "book",
                         "id" : self.book_id,
                         "title" : self.title,
-                        "path" : self.path
+                        "path" : self.path,
+                        "pw" : self.pw
 
             })
+
             # fire the signal
             self.favoriteSignal.emit([self.title, self.path, self.book_id, True, "book"])
 
@@ -131,6 +202,64 @@ class bookWidget(QWidget):
         # set the current button state
         self.setState()
 
+    def delete(self):
+
+        check = True
+        if self.pw != "":
+            text, ok = QInputDialog.getText(self, "Password Dialog" ,"Type the Password : ", echo=QLineEdit.Password)
+            if ok:
+                if text != self.pw:
+                    check = False
+                    QMessageBox.warning(self, 'Password warning', "Wrong Password , Please Try again!")
+            else:
+                check = False
+
+        message = QMessageBox.StandardButton.No
+        if check:
+            message = QMessageBox.warning(self, "Delete Message", f"Are you sure to Delete Book {self.title} ?",
+                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        if message == QMessageBox.StandardButton.Yes:
+            # remove from the book table
+            connect = sqlite3.connect(db_file)
+            cursor = connect.cursor()
+
+            try:
+                cursor.execute(f"DELETE FROM book_table WHERE book_id = '{self.book_id}' ")
+            except:
+                pass
+            connect.commit()
+            connect.close()
+
+            # delete from the book json file
+            book_data = {}
+            with open(book_file) as file:
+                book_data = json.load(file)
+
+            book_data.pop(self.book_id)
+
+            with open(book_file, 'w') as file:
+                json.dump(book_data, file, indent=4)
+            del book_data
+
+            # remove from the favorite json file
+            if self.addFavoriteButton.isChecked():
+                fav_data = []
+                with open(favorite_file) as file:
+                    fav_data = json.load(file)
+
+                for i in fav_data:
+                    if i['type'] == 'book' and i['id'] == self.book_id:
+                        fav_data.remove(i)
+                        break
+
+                with open(favorite_file, 'w') as file:
+                    json.dump(fav_data, file, indent=4)
+
+            # finnaly delete the widget
+            self.deleteLater()
+            print("[INFO] successfully delete the book from the system...")
+
     @staticmethod
     def getIdentifire():
 
@@ -144,8 +273,8 @@ class bookWidget(QWidget):
 
 
 class boxBookWidget(bookWidget):
-    def __init__(self, title, book_id, path):
-        super(boxBookWidget, self).__init__(title, book_id, path)
+    def __init__(self, title, book_id, path, pw = ""):
+        super(boxBookWidget, self).__init__(title, book_id, path, pw)
 
         # set the widget size settings
         self.setMaximumSize(QSize(600, 400))
@@ -153,6 +282,8 @@ class boxBookWidget(bookWidget):
         self.coverImageLabel.setFixedSize(QSize(250, 300))
 
         self.titleLabel.setWordWrap(True)
+
+        self.coverImageLabel.mousePressEvent = lambda e: self.popUpImage()
 
         # create the v box for pack the title and form
         vbox = QVBoxLayout()
@@ -177,25 +308,34 @@ class boxBookWidget(bookWidget):
             page1 = doc.load_page(0)
 
             pic = page1.get_pixmap()
-            image_dir = f"db/temp/image{bookWidget.getIdentifire()}.png"
+            self.image_dir = f"db/temp/image{bookWidget.getIdentifire()}.png"
 
-            pic.save(image_dir)
+            pic.save(self.image_dir)
             # close the document
             doc.close()
 
             self.coverImageLabel.setPixmap(
-                QPixmap(image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+                QPixmap(self.image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
         except:
             # set the pix map
             self.coverImageLabel.setPixmap(
                 QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
 
+    def popUpImage(self):
 
+        return None
+        # create the Image Label
+        self._label = QLabel()
+        self._label.setPixmap(
+            QPixmap(self.image_dir).scaled(QSize(500, 400), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self._label.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self._label.setGeometry(QRect(self.coverImageLabel.mapToGloabl(self.coverImageLabel.rect().bottomLeft()), QSize(500, 400)))
+        self._label.show()
 
 
 class listBookWidget(bookWidget):
-    def __init__(self, title, book_id, path):
-        super(listBookWidget, self).__init__(title, book_id, path)
+    def __init__(self, title, book_id, path, pw = ""):
+        super(listBookWidget, self).__init__(title, book_id, path, pw)
 
         # set the widget size settings
         self.setMaximumHeight(150)

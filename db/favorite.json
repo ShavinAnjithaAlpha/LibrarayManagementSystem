@@ -20,10 +20,9 @@
     {
         "type": "collection",
         "id": "rprzc",
-        "title": "Languages",
+        "title": "Computor Languages",
         "path": "/3/"
     },
-
     {
         "type": "collection",
         "id": "tuj29",
@@ -89,6 +88,24 @@
         "id": "l3bix",
         "title": "Artthur C. Clerk Book Series",
         "path": "/5/1/"
+    },
+    {
+        "type": "book",
+        "id": "taqri",
+        "title": "The Feynman Lectures on Physics, Vol. I The New Millennium Edition Mainly Mechanics, Radiation, and Heat by Richard P. Feynman, Robert B. Leighton, Matthew Sands (z-lib.org).pdf",
+        "path": "/0/",
+        "pw": "Shavin"
+    },
+    {
+        "type": "collection",
+        "id": "1ifm2",
+        "title": "Fairy Book",
+        "path": "/5/"
+    },
+    {
+        "type": "collection",
+        "id": "rparp",
+        "title": "C++ and C#",
+        "path": "/3/2/"
     }
-
 ]

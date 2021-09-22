@@ -10,6 +10,7 @@ db_file = "db/data.db"
 favorite_file = "db/favorite.json"
 collection_file = "db/collection.json"
 collection_track_file = "db/collection_tracking.json"
+book_file = "db/book.json"
 
 
 class collectionWidget(QWidget):
@@ -106,11 +107,18 @@ class collectionWidget(QWidget):
         self.statusAction.triggered.connect(self.fireStatus)
         self.statusAction.setToolTip("More About the Collection")
 
+        # creaet the delete action
+        self.deleteActon = QAction("Delete", self)
+        self.deleteActon.setToolTip("Delete the all of the data aboutu the collection")
+        self.deleteActon.triggered.connect(self.delete)
+
         # add to the menu
         self.menu.addAction(self.changeTitleAction)
         self.menu.addAction(self.changeDesAction)
         self.menu.addAction(self.changeImageAction)
         self.menu.addAction(self.changePasswordAction)
+        self.menu.addSeparator()
+        self.menu.addAction(self.deleteActon)
         self.menu.addAction(self.statusAction)
 
         self.menuButton.setMenu(self.menu)
@@ -292,7 +300,7 @@ class collectionWidget(QWidget):
                 "type" : "collection",
                 "id" : id,
                 "title" : self.title,
-                "path" : self.path,
+                "path" : self.path
             })
 
             # fire hte favorite signal
@@ -311,6 +319,83 @@ class collectionWidget(QWidget):
             json.dump(user_data, file, indent=4)
         self.setIcon()
 
+    def delete(self):
+
+        check = True
+        if self.pw != "":
+            text, ok = QInputDialog.getText(self, "Password Dialog", "Type the Password : ", echo=QLineEdit.Password)
+            if ok:
+                if text != self.pw:
+                    check = False
+                    QMessageBox.warning(self, 'Password warning', "Wrong Password , Please Try again!")
+            else:
+                check = False
+
+        message = QMessageBox.StandardButton.No
+        if check:
+            message = QMessageBox.warning(self, "Delete Message", f"Are you sure to Delete Collection {self.title} ?",
+                                                        QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+
+        if message == QMessageBox.StandardButton.Yes:
+            # remove the data from the data base and all of the json files
+            connect = sqlite3.connect(db_file)
+            cursor = connect.cursor()
+
+            cursor.execute(f"DELETE FROM collection_table WHERE collection_id = '{self.collection_id}' ")
+
+            # remove the all of the book from the book table
+            cursor.execute("SELECT path, book_id FROM book_table " )
+            books = cursor.fetchall()
+
+            with open(book_file) as file:
+                book_data = json.load(file)
+
+            removed_books = [i[1] for i in books if i[0].startswith(self.path)]
+            for i in removed_books:
+                try:
+                    cursor.execute(f"DELETE FROM book_table WHERE book_id = '{i}' ")
+                    book_data.pop(i)
+                except:
+                    pass
+
+            with open(book_file, 'w') as file:
+                json.dump(book_data, file, indent=4)
+
+            connect.commit()
+            connect.close()
+            del book_data
+            del removed_books
+            del books
+
+            # remove the colelction json file info
+            coll_data  : dict = {}
+            with open(collection_file) as file:
+                coll_data = json.load(file)
+
+            coll_data.pop(self.collection_id)
+
+            with open(collection_file, "w") as file:
+                json.dump(coll_data, file, indent=4)
+            del coll_data
+
+            # remove from the favorite jsn file
+            if self.addFavoriteButton.isChecked():
+                # remove from the favorite json file
+                fav_data = []
+                with open(favorite_file) as file:
+                    fav_data = json.load(file)
+
+                for i in fav_data:
+                    if i['type'] == 'collection' and i['id'] == self.collection_id:
+                        fav_data.remove(i)
+                        break
+                with open(favorite_file, 'w') as file:
+                    json.dump(fav_data, file, indent=4)
+
+
+            # finally delete the widget
+            self.deleteLater()
+            print("[INFO] successfully delete the collection...")
 
 class boxCollectionWidget(collectionWidget):
     def __init__(self, title, description, image_dir, path, pw ,id):

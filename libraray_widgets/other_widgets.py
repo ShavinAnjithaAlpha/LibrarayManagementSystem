@@ -11,6 +11,8 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxL
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPixmap, QIcon
 
+from style_sheet import dark_theme_for_pathWidget
+
 db_file = "db/data.db"
 collection_file  = "db/collection.json"
 
@@ -18,6 +20,8 @@ class switchButton(QWidget):
 
     # defined the new signal
     switchSignal = pyqtSignal()
+    grid_image = "images/sys_images/grid_view.png"
+    list_image = "images/sys_images/list_view.png"
 
     def __init__(self, textLeft, textRight, key1, key2):
         super(switchButton, self).__init__()
@@ -33,11 +37,15 @@ class switchButton(QWidget):
         self.setContentsMargins(0, 0, 0, 0)
         # create the two buttons
         self.buttonLeft = QPushButton(self.textLeft)
+        self.buttonLeft.setIcon(QIcon(self.list_image))
+        self.buttonLeft.setIconSize(QSize(25, 25))
         self.buttonLeft.setObjectName("switchButtonLeft")
         self.buttonLeft.setCheckable(True)
         self.buttonLeft.setChecked(True)
 
         self.buttonRight = QPushButton(self.textRight)
+        self.buttonRight.setIcon(QIcon(self.grid_image))
+        self.buttonRight.setIconSize(QSize(25, 25))
         self.buttonRight.setObjectName("switchButtonRight")
         self.buttonRight.setCheckable(True)
         self.buttonRight.setChecked(False)
@@ -109,9 +117,9 @@ class StatusWidget(QWidget):
 
         # create the pixmap object
         pixmap = QPixmap(image_path).scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # create the label for stote the pix map
+        # create the label for store the pix map
         imageLabel = QLabel()
-        imageLabel.resize(size)
+        imageLabel.setFixedSize(size)
         imageLabel.setPixmap(pixmap)
         # add to te form
         self.form.addWidget(imageLabel)
@@ -242,13 +250,114 @@ class rootCollectionWidget(QWidget):
 
         self.setLayout(vBox)
 
+class pathWidget(QWidget):
+
+    db_file = "db/data.db"
+    # create the custom signal
+    pathSignal = pyqtSignal(list)
+
+    def __init__(self, path : str):
+        super(pathWidget, self).__init__()
+        self.path = path
+        self.sub_paths = []
+        # set the path of the root path
+        self.generatePaths()
+        # setUpp the UI
+        self.initializeUI()
+
+    def generatePaths(self):
+
+        #first open teh data base
+        connect = sqlite3.connect(self.db_file)
+        cursor = connect.cursor()
+
+        split_path = self.path.split("/")
+        sub_paths = []
+        path = "/"
+        for item in split_path:
+            if item != "":
+                path += f"{item}/"
+                sub_paths.append(path)
+
+        # generate the dictimary list
+        for path in sub_paths:
+            cursor.execute(f"SELECT name, collection_id, pw FROM collection_table WHERE path = '{path}' ")
+            data = cursor.fetchall()
+
+            self.sub_paths.append({
+                "name" : data[0][0],
+                "path" : path,
+                "collection_id" : data[0][1],
+                "pw" : data[0][2]
+            })
 
 
+    def initializeUI(self):
 
+        self.setMaximumHeight(70)
+        # create the main base widget
+        baseWidget = QWidget()
+        baseWidget.setObjectName("pathWidgetBase")
+
+        # create the hbox for pack the items
+        self.hbox = QHBoxLayout()
+        self.hbox.setSpacing(0)
+        self.hbox.setContentsMargins(0, 0, 0, 0)
+
+        baseWidget.setLayout(self.hbox)
+
+        # create the main layout
+        hbox1 = QHBoxLayout()
+        hbox1.addWidget(baseWidget)
+        self.setLayout(hbox1)
+
+        self.widgets = []
+        self.updateUI()
+
+        self.setStyleSheet(dark_theme_for_pathWidget)
+
+    def updateUI(self):
+
+        for widget in self.widgets:
+            self.hbox.removeWidget(widget)
+            widget.deleteLater()
+
+        self.widgets = []
+        for item in self.sub_paths:
+            # create the button
+            button = QPushButton(item["name"])
+            button.setObjectName("pathWidgetButton")
+            button.pressed.connect(lambda a = item['path'], b = item['collection_id'], c = item['pw'] : self.pathSignal.emit([a, b, c]))
+            # create the label
+            label = QLabel(">")
+            # add to the h box and widgets list
+            self.hbox.addWidget(button)
+            self.hbox.addWidget(label)
+
+            self.widgets.append(button)
+            self.widgets.append(label)
+
+            self.hbox.setAlignment(button, Qt.AlignLeft)
+            self.hbox.setAlignment(label, Qt.AlignLeft)
+
+        self.hbox.addStretch()
+
+
+    def update(self, newPath : str) -> None:
+        super().update()
+        # update the widget
+        self.path = newPath
+        self.sub_paths = []
+        self.generatePaths()
+        self.updateUI()
 
 if __name__ == "__main__":
     app = QApplication([])
 
-    app.setStyleSheet(""" QWidget {background-color : rgb(20, 20, 20)}""")
+    #app.setStyleSheet(""" QWidget {background-color : rgb(20, 20, 20)}""")
+
+    window = pathWidget("/")
+    window.show()
+
     app.exec_()
 

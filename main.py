@@ -7,9 +7,10 @@ import sys, random, threading
 
 import fitz
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
-                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu, QAction, QMessageBox)
+                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu,
+                             QAction, QMessageBox, QStackedLayout, QDesktopWidget)
 
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit, QRect
 from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
 # import the custom modules
 from dialogs import newCollectionDialog
@@ -74,6 +75,16 @@ def refreshDataBase(db_file):
     connection.commit()
     connection.close()
     print('[INFO] successfully removed the undefined pdf files from the data base')
+
+class LibNms:
+    OPEN = 1
+    RENAME = 2
+    CHNDES = 3
+    INFO = 4
+    CHNIMG = 5
+    CHNPW = 6
+    DELETE = 7
+
 
 
 class Stage:
@@ -165,8 +176,8 @@ class LibraryMangementSystem(QMainWindow):
         # create hte db and images folder if doen not exist
         if not os.path.exists("db"):
             os.mkdir("db")
-        if not os.path.exists("images"):
-            os.mkdir("images")
+        if not os.path.exists("images/sys_images"):
+            os.mkdir("images/sys_images")
         if not os.path.exists("db/temp"):
             os.mkdir("db/temp")
 
@@ -216,12 +227,17 @@ class LibraryMangementSystem(QMainWindow):
 
     def initializeUI(self):
 
+        # get the desktop widget
+        desktop = QDesktopWidget()
+        desk_geo = desktop.geometry()
         # set the window width and height
-        self.width = self.screen().size().width()
-        self.height = self.screen().size().height()
+        self.width = desk_geo.width()
+        self.height = desk_geo.height()
         # first consider about the
         self.setWindowTitle("eLibrary Management System v0.0.1")
         self.setGeometry(0, 0, self.width, self.height)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setObjectName("mainWindowWidget")
 
         # create the mai widgets
         self.setUpWidgets()
@@ -243,7 +259,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the sub widgets
         self.barWidget = QWidget()
-        self.barWidget.setFixedWidth(int(self.width * 0.2))
+        self.barWidget.setMaximumWidth(int(self.width * 0.2))
         self.barWidget.setContentsMargins(0, 0, 0, 0)
         self.barWidget.setObjectName("barWidget")
 
@@ -253,6 +269,7 @@ class LibraryMangementSystem(QMainWindow):
         # create the layout and pack them
         hbox1 = QHBoxLayout()
         hbox1.setSpacing(0)
+        hbox1.setContentsMargins(0, 0, 0, 0)
         hbox1.addWidget(self.barWidget)
         hbox1.addWidget(barOtherWidget)
 
@@ -263,10 +280,22 @@ class LibraryMangementSystem(QMainWindow):
         self.titleBaridget = QWidget()
         self.titleBaridget.setFixedHeight(int(self.height * 0.08))
         self.titleBaridget.setObjectName("titleBarWidget")
+
+        # create the stack layout for setUp the varius stack layouts
+        self.toolStackLyt = QStackedLayout()
+        # create the collection widget tool bar widgets
+        self.collectionToolBar = QWidget()
+        self.collectionToolBar.setMaximumHeight(int(self.height * 0.18))
+        self.collectionToolBar.setContentsMargins(0, 0, 0, 0)
+
         # create the tool bar widget
         self.toolBarWidget = QWidget()
         self.toolBarWidget.setMaximumHeight(int(self.height * 0.18))
         self.toolBarWidget.setObjectName("toolBarWidget")
+        # add to the stack layout
+        self.toolStackLyt.addWidget(self.toolBarWidget)
+        self.toolStackLyt.addWidget(self.collectionToolBar)
+        self.toolStackLyt.setContentsMargins(0, 0, 0, 0)
         # create the space widget
         spaceWidget = QWidget()
         spaceWidget.setObjectName("spaceWidget")
@@ -275,23 +304,27 @@ class LibraryMangementSystem(QMainWindow):
         # create the vbox for pack this widgets
         vbox1 = QVBoxLayout()
         vbox1.setSpacing(0)
+        vbox1.setContentsMargins(0, 0, 0, 0)
         vbox1.addWidget(self.titleBaridget)
-        vbox1.addWidget(self.toolBarWidget)
-        vbox1.addWidget(spaceWidget)
+        vbox1.addLayout(self.toolStackLyt)
+        vbox1.addWidget(spaceWidget, 10)
 
         barOtherWidget.setLayout(vbox1)
 
         # create the stage widget and reminders widget
         self.stageWidget = QWidget()
         self.stageWidget.setObjectName("stageWidget")
+        self.stageWidget.setContentsMargins(0, 0, 0, 0)
 
         self.reminderWidget = QWidget()
+        self.reminderWidget.setContentsMargins(0, 0, 0, 0)
         self.reminderWidget.setMaximumWidth(int(self.width * 0.15))
         self.reminderWidget.setObjectName("reminderWidget")
 
         # create the other h box for pack them
         hbox2 = QHBoxLayout()
         hbox2.setSpacing(0)
+        hbox1.setContentsMargins(0, 0, 0, 0)
         hbox2.addWidget(self.stageWidget)
         hbox2.addWidget(self.reminderWidget)
 
@@ -301,6 +334,7 @@ class LibraryMangementSystem(QMainWindow):
         self.setUpTitleBarWidget()
         self.setUpBarWidget()
         self.setUpToolBarWidget()
+        self.setUpCollectionToolBarWidget()
         self.setUpStageWidget()
         self.setUpRemiderWidget()
 
@@ -386,14 +420,20 @@ class LibraryMangementSystem(QMainWindow):
         title_label.setFont(QFont("verdana", 27))
         title_label.setAlignment(Qt.AlignRight)
         title_label.setObjectName("title_label")
+        title_label.setContentsMargins(0, 0, 0, 0)
 
         # create the h box for pack the label
         hbox = QHBoxLayout()
+        hbox.setSpacing(0)
         hbox.addWidget(title_label)
 
         self.titleBaridget.setLayout(hbox)
 
     def setUpBarWidget(self):
+
+        # create the hide butto and show button
+        barHideShowButton = QPushButton("<")
+        barHideShowButton.pressed.connect(self.hideOrShowBar)
 
         # create the two main widgets for favorites and quick access
         self.favoriteWidget = QWidget()
@@ -406,6 +446,7 @@ class LibraryMangementSystem(QMainWindow):
         # create the vbox for pack the widgets
         vbox = QVBoxLayout()
         vbox.setSpacing(0)
+        vbox.addWidget(barHideShowButton, alignment=Qt.AlignLeft)
         vbox.addWidget(self.favoriteWidget)
         vbox.addWidget(self.recentaccessWidget)
         vbox.addStretch()
@@ -414,6 +455,33 @@ class LibraryMangementSystem(QMainWindow):
 
         self.setUpFavoriteBar()
         self.setUpRecentAccessBar()
+
+
+    def hideOrShowBar(self):
+
+        # create the hide and show animation object
+        self.barAniamtion = QPropertyAnimation(self.barWidget, b'maximumWidth')
+        self.barAniamtion.setStartValue(self.barWidget.maximumWidth())
+        self.barAniamtion.setCurrentTime(1000)
+
+        if (self.favoriteWidget.isHidden()):
+            self.barAniamtion.setEndValue(int(self.width * 0.2))
+            self.barAniamtion.setEasingCurve(QEasingCurve.OutCurve)
+            # start the animaion
+            self.barAniamtion.start(QPropertyAnimation.DeleteWhenStopped)
+            # show the widgets
+            self.favoriteWidget.show()
+            self.recentaccessWidget.show()
+        else:
+            self.barAniamtion.setEndValue(50)
+            self.barAniamtion.setEasingCurve(QEasingCurve.InCurve)
+            # start the animaion
+            self.barAniamtion.start(QPropertyAnimation.DeleteWhenStopped)
+            # hide the widgets
+            self.favoriteWidget.hide()
+            self.recentaccessWidget.hide()
+
+
 
     def setUpFavoriteBar(self):
 
@@ -433,6 +501,9 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the vbox for favorite bar
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(0)
+        # add the widgets
         vbox.addWidget(titleLabel)
         vbox.addWidget(self.favoriteListWidget)
         vbox.addStretch()
@@ -461,9 +532,10 @@ class LibraryMangementSystem(QMainWindow):
             #self.favoriteListWidget.clearSelection()
 
         else:
-            # create the new book widget
-            newBookWindow = BookArea(data['id'])
-            newBookWindow.show()
+            # get the pasowrd from the favorite list
+            pw = data.get("pw", "")
+            # create the new book widge
+            self.openBookSpace(data["id"], pw)
 
     def updateFavoriteModel(self, data : list):
 
@@ -504,6 +576,8 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the vbox for favorite bar
         vbox = QVBoxLayout()
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(0)
         vbox.addWidget(titleLabel)
         vbox.addWidget(self.recentListView)
         vbox.addStretch()
@@ -527,6 +601,93 @@ class LibraryMangementSystem(QMainWindow):
 
             self.openNewPage(data[0][0], coll_id, pw=data[0][1])
 
+    def perfomeCollAction(self, action):
+
+        # get the selectted widget from the stage
+        widget  = self.currentStage.selected_widget
+
+        if (widget and (isinstance(widget, listCollectionWidget) or isinstance(widget, boxCollectionWidget))):
+            # perfome theh aciton
+            if action == LibNms.OPEN:
+                widget.mouseDoubleClickEvent(None)
+            elif action == LibNms.RENAME:
+                widget.changeTitle()
+            elif action == LibNms.CHNDES:
+                widget.changeDescription()
+            elif action == LibNms.CHNPW:
+                widget.changePassword()
+            elif action == LibNms.INFO:
+                widget.statusSignal.emit(widget.collection_id)
+            elif action == LibNms.CHNIMG:
+                widget.changeImage()
+            elif action == LibNms.DELETE:
+                widget.delete()
+
+    def setUpCollectionToolBarWidget(self):
+        # create the hbox and pack the buttons for this
+        hbox = QHBoxLayout()
+        hbox.setSpacing(0)
+
+        # create the this buttons
+        openButton = QPushButton("Open")
+        openButton.setIcon(QIcon("images/sys_images/collOpenIcon.png"))
+        openButton.pressed.connect(lambda e = LibNms.OPEN : self.perfomeCollAction(e))
+
+        renameButton = QPushButton("Rename")
+        renameButton.setIcon(QIcon("images/sys_images/renameIcon.png"))
+        renameButton.pressed.connect(lambda e = LibNms.RENAME : self.perfomeCollAction(e))
+
+        changeDesButton = QPushButton("Change Description")
+        changeDesButton.setIcon(QIcon("images/sys_images/changeDesIocn.png"))
+        changeDesButton.pressed.connect(lambda e  = LibNms.CHNDES : self.perfomeCollAction(e))
+
+        changePwButton = QPushButton("Change Password")
+        changePwButton.setIcon(QIcon("images/sys_images/changePwIcon.png"))
+        changePwButton.pressed.connect(lambda e = LibNms.CHNPW : self.perfomeCollAction(e))
+
+        changeImageButton = QPushButton("Change Cover Image")
+        changeImageButton.setIcon(QIcon("images/sys_images/changeImageIcon.png"))
+        changeImageButton.pressed.connect(lambda e = LibNms.CHNIMG : self.perfomeCollAction(e))
+
+        deleteButton = QPushButton("Delete")
+        deleteButton.setIcon(QIcon('images/sys_images/close.png'))
+        deleteButton.pressed.connect(lambda e = LibNms.DELETE : self.perfomeCollAction(e))
+
+        informationButton = QPushButton("Informations")
+        informationButton.setIcon(QIcon("images/sys_images/informationIocn.png"))
+        informationButton.pressed.connect(lambda e = LibNms.INFO : self.perfomeCollAction(e))
+
+        self.collectionToolBarButton = [openButton, renameButton, changeDesButton, changePwButton, changeImageButton,
+                                        deleteButton ,informationButton]
+
+        for button in self.collectionToolBarButton:
+            button.setDisabled(True)
+            button.setIconSize(QSize(100, 120))
+            button.setObjectName("collectionToolBarButton")
+            hbox.addWidget(button)
+
+        # create the stack Change Button
+        stackChangeButton = QPushButton(">")
+        stackChangeButton.setObjectName("stackChangeButton")
+        stackChangeButton.pressed.connect(lambda : self.toolStackLyt.setCurrentIndex(0))
+        hbox.addWidget(stackChangeButton)
+
+        # create the hbox for pathWidget
+        hbox2 = QHBoxLayout()
+        hbox2.setContentsMargins(0, 0, 0, 0)
+        # create the path widget
+        self.pathWidget = pathWidget("/")
+        self.pathWidget.pathSignal.connect(lambda e : self.openNewPage(*e))
+        hbox2.addWidget(self.pathWidget)
+
+        vbox = QVBoxLayout()
+        vbox.setSpacing(0)
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.addLayout(hbox)
+        vbox.addLayout(hbox2)
+        self.collectionToolBar.setLayout(vbox)
+
+
     def setUpToolBarWidget(self):
 
         # create the search bar for library system
@@ -540,7 +701,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the label with search icon
         searchIcon = QLabel()
-        searchIcon.setPixmap(QPixmap("images/sys_images/search_icon.png").scaled(QSize(45, 45), Qt.KeepAspectRatio,
+        searchIcon.setPixmap(QPixmap("images/sys_images/searchIcon.png").scaled(QSize(45, 45), Qt.KeepAspectRatio,
                                                                                  Qt.SmoothTransformation))
 
         # create the box for pack the search items
@@ -553,7 +714,7 @@ class LibraryMangementSystem(QMainWindow):
         grid_lyt = QGridLayout()
         grid_lyt.setSpacing(10)
 
-        grid_lyt.addLayout(hboxSearch, 1, 1, 1, 3)
+        grid_lyt.addLayout(hboxSearch, 1, 1, 1, 4)
 
         # create the group box for pack the radio buttons
         group_box = QGroupBox()
@@ -581,15 +742,17 @@ class LibraryMangementSystem(QMainWindow):
         self.addButton = QPushButton("+")
         self.addButton.setObjectName("addButton")
         self.addButton.setFont(QFont("verdana", 25))
-        self.addButton.pressed.connect(self.addNewItem)
+        self.addButton.pressed.connect(lambda e = self.addButton : self.addNewItem(e))
 
 
         # create the show and hide buttons
-        self.toolBarHideButton = QPushButton("<")
+        self.toolBarHideButton = QPushButton()
+        self.toolBarHideButton.setIcon(QIcon("images/sys_images/up_arrow.png"))
         self.toolBarHideButton.pressed.connect(self.hideToolBar)
         self.toolBarHideButton.setObjectName("toolBarHideButton")
 
-        self.toolBarShowButton = QPushButton(">")
+        self.toolBarShowButton = QPushButton()
+        self.toolBarShowButton.setIcon(QIcon("images/sys_images/down_arraow.png"))
         self.toolBarShowButton.pressed.connect(self.showToolBar)
         self.toolBarShowButton.hide()
         self.toolBarShowButton.setObjectName("toolBarHideButton")
@@ -646,6 +809,13 @@ class LibraryMangementSystem(QMainWindow):
         # add to the grid
         grid_lyt.addLayout(buttonHBox, 1, 0, 1, 2)
 
+        # create the stack lyt change button
+        stackChangeButton = QPushButton(">")
+        stackChangeButton.setObjectName("stackChangeButton")
+        stackChangeButton.pressed.connect(lambda : self.toolStackLyt.setCurrentIndex(1))
+        grid_lyt.addWidget(stackChangeButton, 0, 4)
+
+
 
         # create the list for tool bar items
         self.toolBarItems = [self.searchBar, self.backwardButton, self.forwardButton, refreshButton, searchIcon, group_box,
@@ -659,18 +829,18 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the animation for hide the tool bar
         self.toolBarHidingAnimation = QPropertyAnimation(self.toolBarWidget, b'maximumHeight')
-        #self.toolBarHidingAnimation.setEasingCurve(QEasingCurve.OutCubic)
-        self.toolBarHidingAnimation.setDuration(1000)
+        self.toolBarHidingAnimation.setEasingCurve(QEasingCurve.InCurve)
+        self.toolBarHidingAnimation.setDuration(900)
         self.toolBarHidingAnimation.setStartValue(self.toolBarWidget.height())
-        self.toolBarHidingAnimation.setEndValue(80)
-        self.toolBarHidingAnimation.start()
+        self.toolBarHidingAnimation.setEndValue(50)
+        self.toolBarHidingAnimation.start(QPropertyAnimation.DeleteWhenStopped)
 
         self.toolBarHideButton.hide()
         self.toolBarShowButton.show()
 
         self.titleBaridget.hide()
 
-        for widget in self.toolBarItems:
+        for widget in [*self.toolBarItems, *self.collectionToolBarButton, self.pathWidget]:
             widget.hide()
 
     def showToolBar(self):
@@ -681,14 +851,14 @@ class LibraryMangementSystem(QMainWindow):
         self.toolBarShowingAnimation.setDuration(1000)
         self.toolBarShowingAnimation.setStartValue(self.toolBarWidget.height())
         self.toolBarShowingAnimation.setEndValue(int(self.height * 0.18))
-        self.toolBarShowingAnimation.start()
+        self.toolBarShowingAnimation.start(QPropertyAnimation.DeleteWhenStopped)
 
         self.toolBarHideButton.show()
         self.toolBarShowButton.hide()
 
         self.titleBaridget.show()
 
-        for widget in self.toolBarItems:
+        for widget in [*self.toolBarItems, *self.collectionToolBarButton, self.pathWidget]:
             widget.show()
 
     def setUpStageWidget(self):
@@ -699,7 +869,10 @@ class LibraryMangementSystem(QMainWindow):
         self.stageTab.tabBar().setObjectName("stageTabBar")
         self.stageTab.setContentsMargins(0, 0, 0, 0)
         self.stageTab.setTabsClosable(True)
+        # set the tab closable slot
+        self.stageTab.tabCloseRequested.connect(lambda e : self.stageTab.removeTab(e))
         vbox1 = QVBoxLayout()
+        vbox1.setContentsMargins(0, 0, 0, 0)
         vbox1.addWidget(self.stageTab)
 
         self.stageWidget.setLayout(vbox1)
@@ -768,12 +941,14 @@ class LibraryMangementSystem(QMainWindow):
         # create the h box for buttons
         hbox = QHBoxLayout()
         hbox.addStretch()
+        hbox.setContentsMargins(0, 0, 0, 0)
         hbox.addWidget(self.hideButton)
         hbox.addWidget(self.showButton)
 
 
         # create the vbox for tab
         self.reminderLyt = QVBoxLayout()
+        self.reminderLyt.setContentsMargins(0, 0, 0, 0)
         self.reminderLyt.addLayout(hbox)
         self.reminderLyt.addWidget(self.reminderTab)
 
@@ -804,9 +979,9 @@ class LibraryMangementSystem(QMainWindow):
         # create the animation to hide the panel
         self.hideAnimation = QPropertyAnimation(self.reminderWidget, b"maximumWidth")
         self.hideAnimation.setStartValue(self.reminderWidget.width())
-        self.hideAnimation.setEndValue(int(self.width * 0.05))
+        self.hideAnimation.setEndValue(int(self.width * 0.03))
         self.hideAnimation.setDuration(500)
-        self.hideAnimation.start()
+        self.hideAnimation.start(QPropertyAnimation.DeleteWhenStopped)
 
         self.showButton.show()
         self.hideButton.hide()
@@ -826,7 +1001,7 @@ class LibraryMangementSystem(QMainWindow):
         self.showAnimation.setStartValue(self.reminderWidget.width())
         self.showAnimation.setEndValue(int(self.width * 0.15))
         self.showAnimation.setDuration(500)
-        self.showAnimation.start()
+        self.showAnimation.start(QPropertyAnimation.DeleteWhenStopped)
 
         self.showButton.hide()
         self.hideButton.show()
@@ -888,14 +1063,14 @@ class LibraryMangementSystem(QMainWindow):
 
         self.statusWidget.setLayout(self.status_vbox)
 
-    def addNewItem(self):
+    def addNewItem(self, button : QPushButton):
 
         # pop up the new dialog for choose the collection or book
         self.selectDialog = QDialog(self)
+        self.selectDialog.setObjectName("selectedDialog")
+        self.selectDialog.setWindowOpacity(0.5)
         self.selectDialog.setModal(True)
-        self.selectDialog.resize(200, 200)
-        self.selectDialog.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        self.selectDialog.setContentsMargins(0, 0, 0, 0)
+        self.selectDialog.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
         # create the two buttons
         button1 = QPushButton("add Collection")
@@ -913,7 +1088,10 @@ class LibraryMangementSystem(QMainWindow):
         vbox.addWidget(button1)
         vbox.addWidget(button2)
 
+        button_right = button.mapToGlobal(button.rect().bottomRight())
+
         self.selectDialog.setLayout(vbox)
+        self.selectDialog.setGeometry(QRect(button_right.x(), button_right.y() , 200, 200))
         self.selectDialog.show()
 
     def searchThings(self, text : str):
@@ -1012,7 +1190,7 @@ class LibraryMangementSystem(QMainWindow):
                 self.stageLayout.addWidget(widget, count//4, count%4)
             # connect to the slots th widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
-            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
+            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id, b = widget.pw : self.openBookSpace(a, b)
             widget.mousePressEvent = lambda e, a = widget : self.setSelectionWidget(a)
 
             # update the stage
@@ -1116,8 +1294,11 @@ class LibraryMangementSystem(QMainWindow):
             self.currentPath = newPath
             # delete the all of widgets
             for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
-                widget.deleteLater()
-
+                try:
+                    widget.deleteLater()
+                except:
+                    pass
+            print("delete successfuly")
             # clear the stage
             self.currentStage.clear()
             # add the new path to the stage history
@@ -1140,11 +1321,21 @@ class LibraryMangementSystem(QMainWindow):
             self.rootCollectionBox = rootCollectionWidget(id)
             self.status_vbox.insertWidget(1, self.rootCollectionBox)
 
+            # disabled the collection tool bar actions
+            for widget in self.collectionToolBarButton:
+                widget.setDisabled(True)
+
+            # set the path widget UI
+            self.pathWidget.update(newPath)
+
     def sortWidgets(self):
 
         # delete the all of widgets
         for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
-            widget.deleteLater()
+            try:
+                widget.deleteLater()
+            except:
+                pass
 
         # clear the stage
         self.currentStage.clear()
@@ -1160,8 +1351,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # clear the currentStage
         for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
-            widget.deleteLater()
+            try:
+                widget.deleteLater()
+            except:
+                pass
+
         self.stageLayout.deleteLater()
+        del self.stageLayout
         self.currentStage.clear()
 
         # set the layout based on the theme
@@ -1179,7 +1375,10 @@ class LibraryMangementSystem(QMainWindow):
 
         # clear the widgets and stage
         for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
-            widget.deleteLater()
+            try:
+                widget.deleteLater()
+            except:
+                pass
         self.currentStage.clear()
 
         # set the new path
@@ -1195,7 +1394,10 @@ class LibraryMangementSystem(QMainWindow):
 
         # clear the widgets and stage
         for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
-            widget.deleteLater()
+            try:
+                widget.deleteLater()
+            except:
+                pass
         self.currentStage.clear()
 
         # set the new path
@@ -1261,17 +1463,24 @@ class LibraryMangementSystem(QMainWindow):
         # get the need books data
         books_data = self.getNeedBooks(path)
 
+        # generate the password dict
+        pw_dict = {}
+        for i in books_data:
+            pw_dict[i[1]] = i[-1]
         # modified the data used the json file data
         json_data = {}
         with open("db/book.json", "r") as file:
             json_data = json.load(file)
+
         # filter the code data
         id_data = [item[1] for item in books_data]
 
         filter_json_data = []
         for item in json_data.keys():
             if item in id_data:
-                filter_json_data.append([item, json_data[item]["dir"]])
+                pw = pw_dict.get(item , "")
+                filter_json_data.append([item, json_data[item]["dir"], pw])
+
 
         # merge the lists
         originalData = []
@@ -1280,7 +1489,8 @@ class LibraryMangementSystem(QMainWindow):
             new_dict = {"title" : os.path.split(filter_json_data[i][1])[1],
                         "path" : books_data[i][2],
                         "dir" : filter_json_data[i][1],
-                        "id" : books_data[i][1]}
+                        "id" : books_data[i][1],
+                        "pw" : filter_json_data[i][2]}
             originalData.append(new_dict)
 
         # create the new book used the original Data list
@@ -1291,22 +1501,22 @@ class LibraryMangementSystem(QMainWindow):
         for data in filterData:
             # create the widget base on the theme
             if self.getTheme() == "list":
-                widget = listBookWidget(data["title"], data["id"], data["path"])
+                widget = listBookWidget(data["title"], data["id"], data["path"], data["pw"])
                 self.stageLayout.insertWidget(0, widget)
             else:
-                widget = boxBookWidget(data["title"], data["id"], data["path"])
+                widget = boxBookWidget(data["title"], data["id"], data["path"], data["pw"])
                 count = self.currentStage.WidgetCount()
                 self.stageLayout.addWidget(widget, count//4, count%4)
+
             # update the stage area
             self.currentStage.addBook(widget, data)
             # connect to the slots of the widget
             widget.favoriteSignal.connect(self.updateFavoriteModel)
-            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id : self.openBookSpace(a)
+            widget.mouseDoubleClickEvent = lambda e, a = widget.book_id , b = widget.pw : self.openBookSpace(a, b)
             widget.mousePressEvent = lambda e , a = widget : self.setSelectionWidget(a)
 
 
     def addCollectionWidgets(self, FilterData : list):
-
 
         for data in FilterData:
             # create the new widget
@@ -1317,6 +1527,7 @@ class LibraryMangementSystem(QMainWindow):
                 widget = boxCollectionWidget(data["title"], data["description"], data["image_dir"], data["path"], data["pw"] ,data["id"])
                 count = self.currentStage.WidgetCount()
                 self.stageLayout.addWidget(widget, (count) // 4, (count) % 4)
+
 
             widget.mouseDoubleClickEvent = (lambda a, e = widget.path, i = widget.collection_id , p = widget.pw : self.openNewPage(e, i, p))
             widget.mousePressEvent = (lambda a, e = widget : self.setSelectionWidget(e))
@@ -1419,6 +1630,10 @@ class LibraryMangementSystem(QMainWindow):
         # add the created date and time
         self.statusBox.addLabel(f"Created On\n {widget_data['date']}\nAt {widget_data['time']}")
 
+        # set the colelction tool bar button as activate
+        for button in self.collectionToolBarButton:
+            button.setDisabled(False)
+
     def setBookStatus(self):
 
         book_widget = self.currentStage.selected_widget
@@ -1453,13 +1668,26 @@ class LibraryMangementSystem(QMainWindow):
 
             self.status_vbox.insertWidget(0, self.statusBox)
 
-    def openBookSpace(self, book_id : str):
+    def openBookSpace(self, book_id : str, pw  : str = ""):
 
-        # create the new book space
-        newBookSpace = BookArea(book_id)
+        check = False
+        if (pw == ""):
+            check = True
+        else:
+            # ask the password from the user
+            text, ok  = QInputDialog.getText(self, "Password Dialog", "Enter the Password : ", echo=QLineEdit.Password)
+            if ok:
+                if pw == text:
+                    check = True
+                else:
+                    QMessageBox.warning(self, "Incorrect Password", "Password is InCorrect , try Again!", QMessageBox.StandardButton.Ok)
 
-        # add to the stage tab bar
-        newBookSpace.show()
+        if check:
+            # create the new book space
+            newBookSpace = BookArea(book_id)
+
+            # add to the stage tab bar
+            newBookSpace.show()
 
 
     def getNeedPaths(self, rootPath):
@@ -1583,6 +1811,10 @@ class LibraryMangementSystem(QMainWindow):
 
     def sortCollection(self, data):
 
+        def dateObj(date_txt) :
+            a, b, c = date_txt.split(":")
+            return  QDate(int(c), int(b), int(a))
+
         # first get the sort option from the sortBox
         sort_option = self.sortingBox.currentIndex()
 
@@ -1593,6 +1825,11 @@ class LibraryMangementSystem(QMainWindow):
         elif sort_option == 1:
             data.sort(key=lambda a: a["title"], reverse=True)
             return data
+        elif sort_option == 2:
+            data.sort(key  = lambda a : dateObj(a['date']))
+            return data
+        elif sort_option == 3:
+            data.sort(key = lambda a : dateObj(a['date']), reverse=True)
 
         return data
 
