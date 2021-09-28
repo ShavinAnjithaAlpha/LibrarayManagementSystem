@@ -1,8 +1,10 @@
 import json, os
 import sys, sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTreeView
+from PyQt5.QtWidgets import QApplication, QWidget, QTreeView, QVBoxLayout
 from PyQt5.Qt import Qt, QFont, QStandardItem, QStandardItemModel, QHeaderView
 from PyQt5.QtGui import QColor, QIcon
+
+db_file = "db/data.db"
 
 class Modelitem(QStandardItem):
     def __init__(self, text, * ,type_ = "collection"):
@@ -12,20 +14,17 @@ class Modelitem(QStandardItem):
         font.setItalic(True)
 
         if type_ == "collection":
-            image = QIcon("../images/sys_images/coll_img1.png")
+            image = QIcon("images/sys_images/smallCollIocn.png")
         else:
-            image = QIcon("../images/sys_images/book_small.png")
+            image = QIcon("images/sys_images/smallBookIcon.png")
         self.setData(image, Qt.DecorationRole)
 
         self.setText(text)
         self.setFont(font)
 
-
-class View(QMainWindow):
+class LibTreeView(QWidget):
     def __init__(self):
-        super(View, self).__init__()
-        self.setWindowTitle("Tree View for collection tree model")
-        self.resize(500, 600)
+        super(LibTreeView, self).__init__()
 
         header_view = QHeaderView(Qt.Horizontal)
 
@@ -33,9 +32,8 @@ class View(QMainWindow):
         self.treeView.setHeader(header_view)
         self.treeView.header().setStretchLastSection(True)
 
-        self.treeView.expandAll()
         # open the data base file
-        connect = sqlite3.connect("../db/data.db")
+        connect = sqlite3.connect(db_file)
         cursor = connect.cursor()
 
         cursor.execute("SELECT path ,name FROM collection_table")
@@ -48,7 +46,7 @@ class View(QMainWindow):
 
         # create the model
         model = QStandardItemModel()
-        model.setHorizontalHeaderLabels(["Name", ])
+        model.setHorizontalHeaderLabels(["Item Name", ])
         rootNode = model.invisibleRootItem()
         self.parent_path = "/"
 
@@ -57,14 +55,14 @@ class View(QMainWindow):
         self.buildModel(self.parent_path, rootNode)
         self.treeView.setModel(model)
 
-        self.treeView.expandAll()
-
-        self.setCentralWidget(self.treeView)
-        self.show()
+        # create the vbox
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.treeView)
+        self.setLayout(vbox)
 
     def loadBooks(self):
 
-        connection = sqlite3.connect("../db/data.db")
+        connection = sqlite3.connect(db_file)
         cursor = connection.cursor()
 
         cursor.execute("SELECT book_id, path FROM book_table")
@@ -73,7 +71,7 @@ class View(QMainWindow):
         connection.close()
 
         user_data = []
-        with open("../db/book.json") as file:
+        with open("db/book.json") as file:
             user_data = json.load(file)
 
         for i in range(len(data)):
@@ -111,36 +109,4 @@ class View(QMainWindow):
         for item in books:
             book_item = Modelitem(os.path.split(item[0])[1], type_ = "book")
             parentItem.appendRow(book_item)
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = View()
-
-    app.setStyle("Fusion")
-
-    style_sheet = """
-                            QTreeView {background : none;
-                                    color : white;
-                                    padding : 2px;}
-                                    
-                            QTreeView::item {background-color : rgb(25, 25, 25);}
-                            
-                            QTreeView::item:hover {background-color : rgb(200, 0, 0)}
-                            
-                            QTreeView:closed {background-color : rgb(0, 0, 50)}
-                            
-                            QTreeView:opened {background-color : rgb(0, 0, 80)}
-                            
-                            QTreeView::branch {background-color  : rgb(0, 0, 40);
-                                                border-right : 1px solid red;}
-                            """
-
-
-    app.exec_()
-
-
-
-
-
 

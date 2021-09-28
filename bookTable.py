@@ -1,7 +1,8 @@
 import os.path
 import random, fitz
 import sys, json ,sqlite3
-from PyQt5.QtWidgets import QApplication, QWidget, QTableView, QLabel, QLineEdit, QGridLayout, QHBoxLayout, QVBoxLayout, QComboBox, QSplitter
+from PyQt5.QtWidgets import (QApplication, QWidget, QTableView, QLabel, QLineEdit, QGridLayout, QHBoxLayout, QVBoxLayout,\
+                            QComboBox, QSplitter, QDesktopWidget)
 from PyQt5.QtGui import QFont, QColor, QImage, QIcon, QPixmap
 from PyQt5.Qt import QSize, Qt, QAbstractTableModel , QModelIndex, QHeaderView
 # import the book Space widgets
@@ -22,8 +23,8 @@ class bookTable(QWidget):
 
     def __init__(self):
         super(bookTable, self).__init__()
-        self.setGeometry(0, 0, 2000, 1000)
         self.initializeUI()
+        self.setGeometry(QDesktopWidget().geometry())
         self.setUpToolBar()
 
         self.setStyleSheet(dark_theme_for_table)
@@ -32,6 +33,7 @@ class bookTable(QWidget):
 
         # create the table view and set the table model
         self.table_view = QTableView()
+        self.setWindowTitle("Book Table ")
 
         self.model = TableModel()
         self.table_view.setModel(self.model)
@@ -233,6 +235,7 @@ class TableModel(QAbstractTableModel):
         super(TableModel, self).__init__()
         self._data = []
         self.loadData()
+
 
     def loadData(self):
 

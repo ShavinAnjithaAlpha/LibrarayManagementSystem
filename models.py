@@ -7,9 +7,9 @@ from PyQt5.QtCore import QSize
 
 class RecentItemModel(QAbstractListModel):
 
-    collectionImage = QImage("images/sys_images/collectionSmall.png").scaled(QSize(35, 35), Qt.KeepAspectRatio,
+    collectionImage = QImage("images/sys_images/smallCollIocn.png").scaled(QSize(35, 35), Qt.KeepAspectRatio,
                                                                              Qt.FastTransformation)
-    bookImage = QImage("images/sys_images/book.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
+    bookImage = QImage("images/sys_images/smallBookIcon.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
 
     def __init__(self, *args, **kwargs):
         super(RecentItemModel, self).__init__(*args, **kwargs)
@@ -94,8 +94,8 @@ class RecentItemModel(QAbstractListModel):
 class favoriteListModel(QAbstractListModel):
 
     json_file = "db/favorite.json"
-    collectionImage = QImage("images/sys_images/coll_img1.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
-    bookImage = QImage("images/sys_images/book_small.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
+    collectionImage = QImage("images/sys_images/smallCollIocn.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
+    bookImage = QImage("images/sys_images/smallBookIcon.png").scaled(QSize(35, 35), Qt.KeepAspectRatio, Qt.FastTransformation)
 
     def __init__(self, *args, todos = None,  **kwargs):
         super(favoriteListModel, self).__init__(*args, **kwargs)

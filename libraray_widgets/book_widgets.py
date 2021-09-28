@@ -129,21 +129,9 @@ class bookWidget(QWidget):
             connection.close()
 
     def keyPressEvent(self, event : QKeyEvent) -> None:
-
-        if event.key() == Qt.Key_D:
-            print("press delete")
-            warning = QMessageBox.warning(self , "Delete Warning", "Are You Sure to Delete ?")
-
-            if warning == QMessageBox.StandardButton.Yes:
-                # delete the widget and from the data base
-                connect = sqlite3.connect(db_file)
-                cursor = connect.cursor()
-
-                cursor.execute(f" DELETE FROM book_table WHERE book_id = '{self.book_id}' ")
-                connect.commit()
-                connect.close()
-                # delete the widget
-                self.deleteLater()
+        print("Key Press")
+        if event.key() == Qt.Key_Delete:
+            self.delete()
 
     def getInitialState(self):
 
@@ -271,6 +259,9 @@ class bookWidget(QWidget):
 
         return index_str
 
+    def loadCover(self):
+
+        pass
 
 class boxBookWidget(bookWidget):
     def __init__(self, title, book_id, path, pw = ""):
@@ -297,6 +288,12 @@ class boxBookWidget(bookWidget):
 
         self.baseWidget.setLayout(gridLyt)
 
+       # set the pix map
+        self.coverImageLabel.setPixmap(
+            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+
+    def loadCover(self):
+
         try:
             # load the pdf cover image
             with open(book_file) as file:
@@ -317,9 +314,7 @@ class boxBookWidget(bookWidget):
             self.coverImageLabel.setPixmap(
                 QPixmap(self.image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
         except:
-            # set the pix map
-            self.coverImageLabel.setPixmap(
-                QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
+            pass
 
     def popUpImage(self):
 
@@ -350,6 +345,14 @@ class listBookWidget(bookWidget):
 
         self.baseWidget.setLayout(gridLyt)
 
+
+        # set the pix map
+        self.coverImageLabel.setPixmap(
+            QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
+                                                            Qt.FastTransformation))
+
+    def loadCover(self):
+
         try:
             # load the pdf cover image
             with open(book_file) as file:
@@ -363,16 +366,11 @@ class listBookWidget(bookWidget):
             pic = page1.get_pixmap()
             image_dir = f"db/temp/image{bookWidget.getIdentifire()}.png"
 
-            print("2")
             pic.save(image_dir)
-            print("2")
             # close the document
             doc.close()
 
             self.coverImageLabel.setPixmap(
                 QPixmap(image_dir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio, Qt.FastTransformation))
         except:
-            # set the pix map
-            self.coverImageLabel.setPixmap(
-                QPixmap(self.default_cover_imageDir).scaled(self.coverImageLabel.size(), Qt.KeepAspectRatio,
-                                                            Qt.FastTransformation))
+            pass

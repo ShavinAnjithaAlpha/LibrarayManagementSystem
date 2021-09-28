@@ -8,10 +8,11 @@ import sys, random, threading
 import fitz
 from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
                              QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu,
-                             QAction, QMessageBox, QStackedLayout, QDesktopWidget)
+                             QAction, QMessageBox, QStackedLayout, QDesktopWidget, QSplitter)
 
-from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit, QRect
-from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap
+from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit, QRect, QThread
+import PyQt5.QtCore as Core
+from PyQt5.QtGui import QColor, QPalette, QIcon, QPixmap, QKeyEvent
 # import the custom modules
 from dialogs import newCollectionDialog
 from style_sheet import dark_style_sheet, dark_style_sheet_for_Collection
@@ -23,6 +24,8 @@ from libraray_widgets.book_widgets import listBookWidget, boxBookWidget
 from libraray_widgets.collection_widgets import listCollectionWidget, boxCollectionWidget
 from libraray_widgets.other_widgets import *
 from libraray_widgets.status_widgets import *
+from libraray_widgets.LibrarayTreeWidget import LibTreeView
+from libraray_widgets.task_widgets import TaskAndReminderOpen
 from bookTable import bookTable
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -85,6 +88,18 @@ class LibNms:
     CHNPW = 6
     DELETE = 7
 
+class bookCoverLoader(QThread):
+    def __init__(self, bookList : list = [] ):
+        super(bookCoverLoader, self).__init__()
+        self.bookWidgetList = bookList
+
+    def run(self) -> None:
+
+        # load the indivigual images of the each books
+        for bookWidget in self.bookWidgetList:
+            bookWidget.loadCover()
+
+        print("[INFO] cover load successfull...")
 
 
 class Stage:
@@ -235,7 +250,7 @@ class LibraryMangementSystem(QMainWindow):
         self.height = desk_geo.height()
         # first consider about the
         self.setWindowTitle("eLibrary Management System v0.0.1")
-        self.setGeometry(0, 0, self.width, self.height)
+        self.setGeometry(desk_geo)
         self.setContentsMargins(0, 0, 0, 0)
         self.setObjectName("mainWindowWidget")
 
@@ -246,6 +261,13 @@ class LibraryMangementSystem(QMainWindow):
 
         # show the window in the screen
         self.show()
+
+    def keyPressEvent(self, event : QKeyEvent) -> None:
+
+        if event.key() == Qt.Key_Delete:
+            # delete the seleted widget if the seleted item exists
+            if self.currentStage.selected_widget:
+                self.currentStage.selected_widget.delete()
 
     def setUpWidgets(self):
 
@@ -270,8 +292,14 @@ class LibraryMangementSystem(QMainWindow):
         hbox1 = QHBoxLayout()
         hbox1.setSpacing(0)
         hbox1.setContentsMargins(0, 0, 0, 0)
-        hbox1.addWidget(self.barWidget)
-        hbox1.addWidget(barOtherWidget)
+
+
+        # create the splitter for this
+        splitter  = QSplitter(Qt.Horizontal)
+        splitter.setContentsMargins(0, 0, 0, 0)
+        splitter.addWidget(self.barWidget)
+        splitter.addWidget(barOtherWidget)
+        hbox1.addWidget(splitter)
 
         self.mainWidgets.setLayout(hbox1)
 
@@ -431,9 +459,49 @@ class LibraryMangementSystem(QMainWindow):
 
     def setUpBarWidget(self):
 
-        # create the hide butto and show button
-        barHideShowButton = QPushButton("<")
+        # create the h box for setup the side bar
+        hbox = QHBoxLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+        hbox.setSpacing(0)
+
+        button_v_box = QVBoxLayout()
+        button_v_box.setContentsMargins(0, 0, 0, 0)
+
+        # create the hide button and show button
+        barHideShowButton = QPushButton()
         barHideShowButton.pressed.connect(self.hideOrShowBar)
+        barHideShowButton.setObjectName("barHideButton")
+        barHideShowButton.setIcon(QIcon('images/sys_images/expandIocn.png'))
+        barHideShowButton.setIconSize(QSize(25, 25))
+        button_v_box.addWidget(barHideShowButton)
+
+        # create the button for navigate through the stack layout widgets
+        favoriteNavButton = QPushButton()
+        favoriteNavButton.setIcon(QIcon("images/sys_images/yellowStar.png"))
+        recentNavButton = QPushButton()
+        recentNavButton.setIcon(QIcon("images/sys_images/quickArrowIcon.png"))
+        treeviewNavButton = QPushButton()
+        treeviewNavButton.setIcon(QIcon("images/sys_images/branch.png"))
+
+        nav_slots = ["fav", "rec", "tree"]
+
+        self.navButton = [favoriteNavButton, recentNavButton, treeviewNavButton]
+        for i, button in enumerate(self.navButton):
+            button.setMaximumWidth(50)
+            button.setCheckable(True)
+            button.setIconSize(QSize(35, 35))
+            button.setObjectName("navigateButton")
+            # connect the slots for this button
+            button.pressed.connect(lambda e =  nav_slots[i] : self.navigateWidget(e))
+            button_v_box.addWidget(button, alignment=Qt.AlignTop)
+        favoriteNavButton.setChecked(True)
+        button_v_box.addStretch()
+
+        # create the stack layout for widgets
+        self.barStackLyt = QStackedLayout()
+        self.barStackLyt.setContentsMargins(0, 0, 0, 0)
+
+
 
         # create the two main widgets for favorites and quick access
         self.favoriteWidget = QWidget()
@@ -443,43 +511,70 @@ class LibraryMangementSystem(QMainWindow):
         self.recentaccessWidget = QWidget()
         self.recentaccessWidget.setContentsMargins(0, 0, 0, 0)
 
-        # create the vbox for pack the widgets
-        vbox = QVBoxLayout()
-        vbox.setSpacing(0)
-        vbox.addWidget(barHideShowButton, alignment=Qt.AlignLeft)
-        vbox.addWidget(self.favoriteWidget)
-        vbox.addWidget(self.recentaccessWidget)
-        vbox.addStretch()
+        # create the tree view and add th the stack layout
+        #self.treeView = LibTreeView()
+        #self.setContentsMargins(0, 0, 0, 0)
+        self.treeView = None
 
-        self.barWidget.setLayout(vbox)
+        self.barStackLyt.addWidget(self.favoriteWidget)
+        self.barStackLyt.addWidget(self.recentaccessWidget)
+        # self.barStackLyt.addWidget(self.treeView)
+
+        # create the widget for pack the stack laout
+        self.navWidget = QWidget()
+        self.navWidget.setContentsMargins(0, 0, 0, 0)
+        self.navWidget.setLayout(self.barStackLyt)
+
+        hbox.addLayout(button_v_box)
+        hbox.addWidget(self.navWidget)
+        self.barWidget.setLayout(hbox)
 
         self.setUpFavoriteBar()
         self.setUpRecentAccessBar()
 
+    def navigateWidget(self, key : str):
+
+
+        if key == "fav":
+            self.navButton[1].setChecked(False)
+            self.navButton[2].setChecked(False)
+            # set the stack layout index
+            self.barStackLyt.setCurrentIndex(0)
+        elif key == "rec":
+            self.navButton[0].setChecked(False)
+            self.navButton[2].setChecked(False)
+            self.barStackLyt.setCurrentIndex(1)
+        elif key == "tree":
+            self.navButton[0].setChecked(False)
+            self.navButton[1].setChecked(False)
+            # create the tree view and view it
+            if not self.treeView:
+                self.treeView = LibTreeView()
+                self.barStackLyt.addWidget(self.treeView)
+
+            self.barStackLyt.setCurrentIndex(2)
 
     def hideOrShowBar(self):
 
         # create the hide and show animation object
         self.barAniamtion = QPropertyAnimation(self.barWidget, b'maximumWidth')
         self.barAniamtion.setStartValue(self.barWidget.maximumWidth())
-        self.barAniamtion.setCurrentTime(1000)
+        self.barAniamtion.setCurrentTime(800)
 
-        if (self.favoriteWidget.isHidden()):
-            self.barAniamtion.setEndValue(int(self.width * 0.2))
+        if (self.navWidget.isHidden()):
+            self.barAniamtion.setEndValue(int(self.width * 0.50))
             self.barAniamtion.setEasingCurve(QEasingCurve.OutCurve)
-            # start the animaion
+            # start the animation
             self.barAniamtion.start(QPropertyAnimation.DeleteWhenStopped)
             # show the widgets
-            self.favoriteWidget.show()
-            self.recentaccessWidget.show()
+            self.navWidget.show()
         else:
             self.barAniamtion.setEndValue(50)
-            self.barAniamtion.setEasingCurve(QEasingCurve.InCurve)
-            # start the animaion
+            self.barAniamtion.setEasingCurve(QEasingCurve.InBounce)
+            # start the animation
             self.barAniamtion.start(QPropertyAnimation.DeleteWhenStopped)
             # hide the widgets
-            self.favoriteWidget.hide()
-            self.recentaccessWidget.hide()
+            self.navWidget.hide()
 
 
 
@@ -494,8 +589,9 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the list view
         self.favoriteListWidget = QListView()
+        self.favoriteListWidget.setContentsMargins(0, 0, 0, 0)
         self.favoriteListWidget.setAlternatingRowColors(True)
-        self.favoriteListWidget.setMinimumHeight(400)
+        self.favoriteListWidget.setMinimumHeight(1000)
         self.favoriteListWidget.setModel(self.favoriteModel)
         self.favoriteListWidget.clicked.connect(self.goToFavorite)
 
@@ -517,19 +613,26 @@ class LibraryMangementSystem(QMainWindow):
 
 
         if data["type"] == "collection":
-            # open the data base for get the password
-            connect = sqlite3.connect(self.db_file)
-            cursor = connect.cursor()
+            try:
+                # open the data base for get the password
+                connect = sqlite3.connect(self.db_file)
+                cursor = connect.cursor()
 
-            cursor.execute(f" SELECT pw FROM collection_table WHERE collection_id = '{data['id']}' ")
-            pw = cursor.fetchall()
-            connect.close()
+                cursor.execute(f" SELECT pw FROM collection_table WHERE collection_id = '{data['id']}' ")
+                pw = cursor.fetchall()
+                connect.close()
 
-            pw = pw[0][0]
-            # open the new page
-            self.openNewPage(data["path"], data["id"], pw = pw)
-            # clear the selection of the list view
-            #self.favoriteListWidget.clearSelection()
+                pw = pw[0][0]
+                # open the new page
+                self.openNewPage(data["path"], data["id"], pw = pw)
+                # clear the selection of the list view
+                #self.favoriteListWidget.clearSelection()
+            except:
+                msg = QMessageBox()
+                msg.setWindowTitle("Error")
+                msg.setText("Something was Error to Open this Collection , sometime deletion error")
+                msg.setWindowFlags(Qt.FramelessWindowHint)
+                msg.exec_()
 
         else:
             # get the pasowrd from the favorite list
@@ -565,7 +668,7 @@ class LibraryMangementSystem(QMainWindow):
         # create the list view for recent item,s
         self.recentListView = QListView()
         self.recentListView.setObjectName("recentListView")
-        self.recentListView.setMinimumHeight(700)
+        self.recentListView.setMinimumHeight(1000)
 
 
         # create the recent model to set to the list view
@@ -589,17 +692,24 @@ class LibraryMangementSystem(QMainWindow):
 
         # get the collection id and path of the clicked item
         if self.recentModel.todos[index.row()][-1] == "collection":
-            coll_id = self.recentModel.todos[index.row()][0]
+            try:
+                coll_id = self.recentModel.todos[index.row()][0]
 
-            # get the path and pw from the data base
-            connect = sqlite3.connect(self.db_file)
-            cursor = connect.cursor()
+                # get the path and pw from the data base
+                connect = sqlite3.connect(self.db_file)
+                cursor = connect.cursor()
 
-            cursor.execute(f" SELECT path, pw FROM collection_table WHERE collection_id = '{coll_id}' ")
-            data = cursor.fetchall()
-            connect.close()
+                cursor.execute(f" SELECT path, pw FROM collection_table WHERE collection_id = '{coll_id}' ")
+                data = cursor.fetchall()
+                connect.close()
 
-            self.openNewPage(data[0][0], coll_id, pw=data[0][1])
+                self.openNewPage(data[0][0], coll_id, pw=data[0][1])
+            except:
+                msg = QMessageBox()
+                msg.setWindowTitle("Error")
+                msg.setText("Something was Error to Open this Collection , sometime deletion error")
+                msg.setWindowFlags(Qt.FramelessWindowHint)
+                msg.exec_()
 
     def perfomeCollAction(self, action):
 
@@ -630,7 +740,7 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the this buttons
         openButton = QPushButton("Open")
-        openButton.setIcon(QIcon("images/sys_images/collOpenIcon.png"))
+        openButton.setIcon(QIcon("images/sys_images/openIcon.png"))
         openButton.pressed.connect(lambda e = LibNms.OPEN : self.perfomeCollAction(e))
 
         renameButton = QPushButton("Rename")
@@ -654,7 +764,7 @@ class LibraryMangementSystem(QMainWindow):
         deleteButton.pressed.connect(lambda e = LibNms.DELETE : self.perfomeCollAction(e))
 
         informationButton = QPushButton("Informations")
-        informationButton.setIcon(QIcon("images/sys_images/informationIocn.png"))
+        informationButton.setIcon(QIcon("images/sys_images/infoIcon.png"))
         informationButton.pressed.connect(lambda e = LibNms.INFO : self.perfomeCollAction(e))
 
         self.collectionToolBarButton = [openButton, renameButton, changeDesButton, changePwButton, changeImageButton,
@@ -693,11 +803,12 @@ class LibraryMangementSystem(QMainWindow):
         # create the search bar for library system
         self.searchBar = QLineEdit()
         self.searchBar.setObjectName("searchBar")
-        self.searchBar.setMinimumSize(QSize(500, 50))
+        self.searchBar.setMinimumSize(QSize(450, 40))
         # self.searchBar.setMaximumSize(QSize(500, 60))
         self.searchBar.setPlaceholderText("search anything")
         self.searchBar.setAlignment(Qt.AlignRight)
         self.searchBar.textChanged.connect(self.searchThings)
+        self.searchBar.mouseDoubleClickEvent = self.advancedSearchPopUp
 
         # create the label with search icon
         searchIcon = QLabel()
@@ -714,14 +825,14 @@ class LibraryMangementSystem(QMainWindow):
         grid_lyt = QGridLayout()
         grid_lyt.setSpacing(10)
 
-        grid_lyt.addLayout(hboxSearch, 1, 1, 1, 4)
+        grid_lyt.addLayout(hboxSearch, 1, 1, 1, 5)
 
         # create the group box for pack the radio buttons
         group_box = QGroupBox()
         group_box.setMaximumSize(QSize(700, 50))
 
         # create the radio buttons
-        searchOptions = ["Only Books", "Only Collections", "Both of them", "From Everything"]
+        searchOptions = ["Only Books", "Only Collections", "Both of them"]
         self.searchOptionRadioButtons = []
         # create the v box layout
         h_box_radios = QHBoxLayout()
@@ -733,6 +844,7 @@ class LibraryMangementSystem(QMainWindow):
             h_box_radios.addWidget(radio_new)
             # add to teh list
             self.searchOptionRadioButtons.append(radio_new)
+        self.searchOptionRadioButtons[0].setChecked(True)
 
         # set the layout ot the group box
         group_box.setLayout(h_box_radios)
@@ -781,7 +893,7 @@ class LibraryMangementSystem(QMainWindow):
         refreshButton.setIconSize(QSize(45, 45))
         refreshButton.setObjectName("refreshButton")
         refreshButton.pressed.connect(self.refreshPage)
-        grid_lyt.addWidget(refreshButton, 0, 3)
+        grid_lyt.addWidget(refreshButton, 0, 4)
 
         # backward button
         self.backwardButton =  QPushButton()
@@ -789,20 +901,28 @@ class LibraryMangementSystem(QMainWindow):
         self.backwardButton.setIconSize(QSize(45, 45))
         self.backwardButton.setObjectName("backwardButton")
         self.backwardButton.setEnabled(False)
-        self.backwardButton.pressed.connect(self.goBack)
+        self.backwardButton.pressed.connect(lambda e = True : self.goBackOrForward(e))
 
         self.forwardButton = QPushButton()
         self.forwardButton.setIcon(QIcon("images/sys_images/forward_icon.png"))
         self.forwardButton.setIconSize(QSize(45, 45))
         self.forwardButton.setObjectName("forwardButton")
         self.forwardButton.setEnabled(False)
-        self.forwardButton.pressed.connect(self.goForward)
+        self.forwardButton.pressed.connect(lambda e = False : self.goBackOrForward(e))
+
+        # create the home button
+        homeButton = QPushButton()
+        homeButton.pressed.connect(self.gotoHome)
+        homeButton.setIconSize(QSize(45, 45))
+        homeButton.setIcon(QIcon('images/sys_images/homeIcon.png'))
+        homeButton.setObjectName("homeButton")
 
         # create the small h box
         buttonHBox = QHBoxLayout()
         buttonHBox.setSpacing(10)
         buttonHBox.addWidget(self.addButton)
         buttonHBox.addSpacing(20)
+        buttonHBox.addWidget(homeButton)
         buttonHBox.addWidget(self.backwardButton)
         buttonHBox.addWidget(self.forwardButton)
         buttonHBox.addStretch()
@@ -813,13 +933,15 @@ class LibraryMangementSystem(QMainWindow):
         stackChangeButton = QPushButton(">")
         stackChangeButton.setObjectName("stackChangeButton")
         stackChangeButton.pressed.connect(lambda : self.toolStackLyt.setCurrentIndex(1))
-        grid_lyt.addWidget(stackChangeButton, 0, 4)
+        grid_lyt.addWidget(stackChangeButton, 0, 5)
 
-
+        # create the task widget
+        taskWidget = TaskAndReminderOpen()
+        grid_lyt.addWidget(taskWidget, 0, 3)
 
         # create the list for tool bar items
         self.toolBarItems = [self.searchBar, self.backwardButton, self.forwardButton, refreshButton, searchIcon, group_box,
-                             self.addButton, self.themeBox, self.sortingBox]
+                             self.addButton, self.themeBox, self.sortingBox, homeButton, taskWidget]
 
         # set the toolBar widget ;layout as the grid_lyt
         self.toolBarWidget.setLayout(grid_lyt)
@@ -916,6 +1038,7 @@ class LibraryMangementSystem(QMainWindow):
         # create the tab view for this widget
         self.reminderTab = QTabWidget()
         self.reminderTab.setObjectName("reminderTab")
+        self.reminderTab.setTabBarAutoHide(True)
 
         # create the two widgets for tab widgets
         self.statusWidget = QWidget()
@@ -929,11 +1052,13 @@ class LibraryMangementSystem(QMainWindow):
         self.reminderTab.addTab(self.reminderNoteWidget, "Reminders")
 
         # create the hide and show button
-        self.hideButton = QPushButton(">")
+        self.hideButton = QPushButton()
+        self.hideButton.setIcon(QIcon('images/sys_images/expandIocn.png'))
         self.hideButton.setObjectName("hideButton")
         self.hideButton.pressed.connect(self.hideStatusPanel)
 
-        self.showButton = QPushButton("<")
+        self.showButton = QPushButton()
+        self.showButton.setIcon(QIcon('images/sys_images/expandIocn.png'))
         self.showButton.setObjectName("showButton")
         self.showButton.hide()
         self.showButton.pressed.connect(self.showStatusPanel)
@@ -1298,7 +1423,7 @@ class LibraryMangementSystem(QMainWindow):
                     widget.deleteLater()
                 except:
                     pass
-            print("delete successfuly")
+
             # clear the stage
             self.currentStage.clear()
             # add the new path to the stage history
@@ -1327,6 +1452,13 @@ class LibraryMangementSystem(QMainWindow):
 
             # set the path widget UI
             self.pathWidget.update(newPath)
+
+            # create the thread and run the thread
+            self.bookCoverLoadThread = bookCoverLoader(self.currentStage.bookWidgets)
+            # start the book widget loader
+            self.bookCoverLoadThread.start()
+            if (self.bookCoverLoadThread.isFinished()):
+                self.bookCoverLoadThread.deleteLater()
 
     def sortWidgets(self):
 
@@ -1371,7 +1503,28 @@ class LibraryMangementSystem(QMainWindow):
         self.renderNewPageForCollection(self.currentPath)
         self.renderNewPageForBook(self.currentPath)
 
-    def goBack(self):
+        # create the thread and run the thread
+        self.bookCoverLoadThread = bookCoverLoader(self.currentStage.bookWidgets)
+        # start the book widget loader
+        self.bookCoverLoadThread.start()
+        if (self.bookCoverLoadThread.isFinished()):
+            self.bookCoverLoadThread.deleteLater()
+
+    def gotoHome(self):
+
+        self.currentPath = "/"
+        for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+            try:
+                widget.deleteLater()
+            except:
+                pass
+
+        self.currentStage.clear()
+        self.renderNewPageForCollection(self.currentPath)
+        self.renderNewPageForBook(self.currentPath)
+
+
+    def goBackOrForward(self, back : bool):
 
         # clear the widgets and stage
         for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
@@ -1382,26 +1535,10 @@ class LibraryMangementSystem(QMainWindow):
         self.currentStage.clear()
 
         # set the new path
-        self.currentPath = self.currentStage.goBackward()
-        # reload the page
-        self.renderNewPageForCollection(self.currentPath)
-        self.renderNewPageForBook(self.currentPath)
-
-        # set the backward button options
-        self.setBackForwardState()
-
-    def goForward(self):
-
-        # clear the widgets and stage
-        for widget in [*self.currentStage.collectionWidgets, *self.currentStage.bookWidgets]:
-            try:
-                widget.deleteLater()
-            except:
-                pass
-        self.currentStage.clear()
-
-        # set the new path
-        self.currentPath = self.currentStage.goForward()
+        if back:
+            self.currentPath = self.currentStage.goBackward()
+        else:
+            self.currentPath =  self.currentStage.goForward()
         # reload the page
         self.renderNewPageForCollection(self.currentPath)
         self.renderNewPageForBook(self.currentPath)
@@ -1514,6 +1651,8 @@ class LibraryMangementSystem(QMainWindow):
             widget.favoriteSignal.connect(self.updateFavoriteModel)
             widget.mouseDoubleClickEvent = lambda e, a = widget.book_id , b = widget.pw : self.openBookSpace(a, b)
             widget.mousePressEvent = lambda e , a = widget : self.setSelectionWidget(a)
+
+
 
 
     def addCollectionWidgets(self, FilterData : list):
@@ -1689,6 +1828,84 @@ class LibraryMangementSystem(QMainWindow):
             # add to the stage tab bar
             newBookSpace.show()
 
+    def advancedSearchPopUp(self, event):
+
+        # first get the search bar rect object
+        searchBarRect = self.searchBar.rect()
+        # create the line edit for advanced search bar
+        self.advancedSearchBar = QLineEdit()
+        self.advancedSearchBar.setGeometry(QRect(self.searchBar.mapToGlobal(searchBarRect.bottomLeft()), QSize(searchBarRect.width(), 60)))
+        self.advancedSearchBar.setFont(QFont('Hack', 14))
+        self.advancedSearchBar.setTextMargins(10, 10, 10, 10)
+        self.advancedSearchBar.setPlaceholderText("Advanced Search Bar")
+
+        self.advancedSearchBar.setFocus()
+        self.advancedSearchBar.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        # set the search bar enter event
+        self.advancedSearchBar.returnPressed.connect(self.advancedSearchTextPass)
+
+        self.advancedSearchBar.show()
+
+    def advancedSearchTextPass(self):
+
+        self.advancedSearchBar.close()
+        # get the serach text
+        search_text = self.advancedSearchBar.text()
+        self.advancedSearchBar.deleteLater()
+
+        if search_text != "":
+            # pass to the get the data from the data bases
+            self.advancedSearchData(search_text)
+
+    def advancedSearchData(self, text):
+
+        connect = sqlite3.connect(self.db_file)
+        cursor = connect.cursor()
+
+        cursor.execute("SELECT * FROM collection_table")
+        data = cursor.fetchall()
+        connect.close()
+
+        new_data = []
+        for coll in data:
+            if text.lower() in coll[3].lower():
+                new_data.append(coll)
+
+        del data
+
+        # reshape the data
+        coll_data = {}
+        with open("db/collection.json", "r") as file:
+            coll_data = json.load(file)
+
+        # generate the new dict for this
+        shaped_data = []
+        for i in new_data:
+            new_dict = {"title": i[3],
+                            "description": coll_data.get(i[1])["description"],
+                            "path": i[2],
+                            "image_dir": coll_data.get(i[1])["image_dir"],
+                            "date": i[4],
+                            "time": i[5],
+                            "id": i[1],
+                            "pw": i[6]}
+            shaped_data.append(new_dict)
+        del coll_data
+
+        self.renderAdvancedSearchWidgets(shaped_data)
+
+    def renderAdvancedSearchWidgets(self, data):
+
+        for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+            try:
+                widget.deleteLater()
+            except:
+                pass
+
+        self.currentStage.addPath(self.currentPath)
+        # pass to the add collection widget method
+        self.addCollectionWidgets(data)
+        self.setBackForwardState()
 
     def getNeedPaths(self, rootPath):
 

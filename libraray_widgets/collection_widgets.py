@@ -2,7 +2,7 @@ import json, sqlite3, os, shutil
 from PyQt5.QtWidgets import (QWidget, QLabel, QPushButton, QMenu ,QAction, QVBoxLayout, QGridLayout,
                              QFileDialog, QMessageBox, QInputDialog, QLineEdit)
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QRectF
-from PyQt5.QtGui import QPixmap, QIcon, QFont, QPainter, QColor, QPen
+from PyQt5.QtGui import QPixmap, QIcon, QFont, QPainter, QColor, QPen, QKeyEvent
 # import the styles
 from style_sheet import dark_style_sheet_for_Collection
 
@@ -90,26 +90,31 @@ class collectionWidget(QWidget):
         self.changeTitleAction = QAction("Change Title", self)
         self.changeTitleAction.triggered.connect(self.changeTitle)
         self.changeTitleAction.setToolTip("Change the Collection title you want")
+        self.changeTitleAction.setIcon(QIcon("images/sys_images/renameIcon2.png"))
 
         self.changeDesAction = QAction("Change Description", self)
         self.changeDesAction.triggered.connect(self.changeDescription)
         self.changeDesAction.setToolTip("Change the Collection Description you want")
+        self.changeDesAction.setIcon(QIcon("images/sys_images/changeDesIcon2.png"))
 
         self.changeImageAction = QAction("Change Cover Image", self)
         self.changeImageAction.triggered.connect(self.changeImage)
         self.changeImageAction.setToolTip("Change the Collection Cover Image you want")
+        self.changeImageAction.setIcon(QIcon("images/sys_images/imageIcon.png"))
 
-        self.changePasswordAction = QAction("Change Passwod", self)
-        self.changePasswordAction.setToolTip("Chnange the collection passowrd or enter the new password")
+        self.changePasswordAction = QAction("Change Password", self)
+        self.changePasswordAction.setToolTip("Change the collection passowrd or enter the new password")
         self.changePasswordAction.triggered.connect(self.changePassword)
+        self.changePasswordAction.setIcon(QIcon("images/sys_images/lockIcon.png"))
 
-        self.statusAction = QAction("Informations", self)
+        self.statusAction = QAction("Infomations", self)
         self.statusAction.triggered.connect(self.fireStatus)
         self.statusAction.setToolTip("More About the Collection")
+        self.statusAction.setIcon(QIcon("images/sys_images/infoIcon.png"))
 
-        # creaet the delete action
+        # create the delete action
         self.deleteActon = QAction("Delete", self)
-        self.deleteActon.setToolTip("Delete the all of the data aboutu the collection")
+        self.deleteActon.setToolTip("Delete the all of the data about the collection")
         self.deleteActon.triggered.connect(self.delete)
 
         # add to the menu
@@ -122,6 +127,11 @@ class collectionWidget(QWidget):
         self.menu.addAction(self.statusAction)
 
         self.menuButton.setMenu(self.menu)
+
+    def keyPressEvent(self, event : QKeyEvent) -> None:
+
+        if event.key() == Qt.Key_Delete:
+            self.delete()
 
     def fireStatus(self):
 
