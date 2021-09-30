@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLabel , QHBoxL
                              QInputDialog, QSplitter, QScrollArea, QDesktopWidget)
 from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QFont, QPixmap
+from simplePDFViewer import PDFViewew
 
 class BookHistoryWidget(QWidget):
     def __init__(self, book_id):
@@ -59,7 +60,7 @@ class BookHistoryWidget(QWidget):
         scrollWidget = QWidget()
         scrollWidget.setContentsMargins(0, 0, 0, 0)
         scrollWidget.setLayout(self.pageLabelBox)
-        scrollWidget.setObjectName("historyWidget2")
+        # scrollWidget.setObjectName("historyWidget2")
 
         scrollBar.setWidget(scrollWidget)
         scrollBar.setContentsMargins(0, 0, 0, 0)
@@ -221,7 +222,7 @@ class BookMarkWidget(QWidget):
     def addLabel(self, page, comment, date, time):
 
         # create the bookmark widget and increase the index
-        bookmarklabel = bookMarkLabel(self.index, page, comment, date, time)
+        bookmarklabel = bookMarkLabel(self.index, page, comment, date, time, self)
         self.index += 1
         self.bookmarkLyt.addWidget(bookmarklabel)
         # add to the bookmark list
@@ -256,8 +257,11 @@ class pageHistoryLabel(QWidget):
 
         baseWidget = QWidget()
         baseWidget.setObjectName("pageBase")
+        baseWidget.setContentsMargins(0, 0, 0, 0)
 
         vbox = QVBoxLayout()
+        vbox.setSpacing(0)
+        vbox.setContentsMargins(0, 0, 0, 0)
         vbox.addWidget(baseWidget)
 
         self.setLayout(vbox)
@@ -291,7 +295,11 @@ class pageHistoryLabel(QWidget):
         baseWidget.setLayout(vbox)
 
     def sizeHint(self) -> QSize:
-        return QSize(300, 100)
+
+        font_metrix = QApplication.fontMetrics()
+        # rect  = self.rect()
+        rect = font_metrix.boundingRect(self.comment)
+        return rect.size()
 
 class CommentLabel(QWidget):
 
@@ -343,8 +351,9 @@ class CommentLabel(QWidget):
         baseWidget.setLayout(vbox)
 
 class bookMarkLabel(QWidget):
-    def __init__(self, i : int, page : int, comment : str, date : str, time : str):
+    def __init__(self, i : int, page : int, comment : str, date : str, time : str, parent = None):
         super(bookMarkLabel, self).__init__()
+        self.parent = parent
         self.data = {"i" : i,
                      "page" : page,
                      "comment" : comment,
@@ -359,7 +368,8 @@ class bookMarkLabel(QWidget):
         numberLabel = QLabel(f"#{self.data['i']}")
         numberLabel.setObjectName("bookmarkIndexLabel")
 
-        pageNumberLabel = QLabel(f"at Page {self.data['page']}")
+        pageNumberLabel = QPushButton(f"at Page {self.data['page']}")
+        pageNumberLabel.pressed.connect(self.loadPage)
         pageNumberLabel.setObjectName("bookmarkPageLabel")
 
         commentLabel = QLabel(self.data['comment'])
@@ -385,3 +395,13 @@ class bookMarkLabel(QWidget):
         hbox.addWidget(dateTimeLabel)
 
         self.setLayout(hbox)
+
+    def loadPage(self):
+
+        with open("db/book.json") as file:
+            data = json.load(file)
+
+            file = data.get(self.parent.book_id).get("dir")
+
+        # create the pdf viewer and load the pdf
+        self.pdf_viewer = PDFViewew(file , int(self.data["page"]))

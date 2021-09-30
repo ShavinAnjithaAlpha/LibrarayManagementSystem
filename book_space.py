@@ -260,6 +260,7 @@ class BookArea(QWidget):
         # create the sub title label
         label1 = QLabel("PDF Informatins")
         label1.setObjectName("PDFLabel")
+        label1.setObjectName("pdfLabel")
         label1.setAlignment(Qt.AlignRight)
         self.statusLyt.addWidget(label1)
 

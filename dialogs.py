@@ -16,6 +16,7 @@ class newCollectionDialog(QDialog):
     def initializeUI(self):
 
         self.setWindowTitle("New Collection Dialog")
+        self.setWindowFlag(Qt.FramelessWindowHint)
         self.setFixedSize(QSize(600, 600))
         self.setModal(True)
 

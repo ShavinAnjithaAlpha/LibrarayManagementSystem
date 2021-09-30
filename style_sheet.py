@@ -9,18 +9,24 @@ dark_style_sheet = """
                             
                 QMenuBar::item:hover{background-color : blue;}
                 
+                QAction::indicator:checked {background-image url(images/sys_images/check_box2.png)}
                 
                 
-                QWidget#mainWindowWidget {padding : 0px;}
+                
+                QWidget#mainWindowWidget {padding : 0px;
+                                        background-image : url(images/sys_images/taskProfile.jpg);}
                                 
                 QWidget#mainWidget {background-color : rgb(20, 20 ,20);
                                     padding : 0px;}
                 
-                QWidget#stageArea {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(10, 10, 10), stop : 1 rgb(50, 50, 50));;
+                QWidget#stageArea {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(10, 10, 10), stop : 1 rgb(50, 50, 50));
+                                    background-position : center center;
+                                    background-image : url(images/sys_images/black_wallpaper.jpg);
                                     border : none;
-                                    margin : 0px;}
+                                     margin : 0px;}
                 
-                QScrollArea#mainScrollArea {border : none;
+                QScrollArea#mainScrollArea {
+                                            border : none;
                                             padding : 0px;
                                             margin : 0px;}
                 
@@ -92,7 +98,10 @@ dark_style_sheet = """
                 QWidget#reminderWidget {background-color : rgb(0, 0, 10);
                                         margin : 0px;
                                         padding : 0px;}
-                                        
+                
+                QWidget#rootCollectionTitleWidget {background-image : url(images/sys_images/black_wallpaper.jpg);
+                                                    background-position : center center;}
+                             
                 QLabel#title_label {color : white;
                                     background : none;
                                     margin : 0px;}
@@ -109,6 +118,7 @@ dark_style_sheet = """
                                                     font-size : 16px}
                 
                 QRadioButton#searchOptionRadioButton::indicator:!checked {background-color : rgb(60, 60, 60);
+                                                                        width  :25px;
                                                                         max-width : 25px;
                                                                         max-height : 25px;
                                                                         min-width : 25px;
@@ -116,14 +126,14 @@ dark_style_sheet = """
                                                                         border-radius : 12px;}
                 
                 QRadioButton#searchOptionRadioButton::indicator:checked {background-color : rgb(240, 60, 6);
-                                                                         max-width : 25px;
-                                                                        max-height : 25px;
-                                                                        min-width : 25px;
-                                                                        min-height : 25px;
+                                                                        width : 25px;
+                                                                        height : 25px;
                                                                         border-radius : 12px;}
                 
-                QGroupBox {border : none;
-                            background : none}
+                QGroupBox {border : 1px solid rgb(50, 50, 50);
+                            background : none;
+                            border-radius : 5px;
+                            }
                             
                 QPushButton#addButton {background-color : rgb(0, 40, 250);
                                         border : none;
@@ -151,15 +161,19 @@ dark_style_sheet = """
                                             padding : 5px;}
                                             
                                             
-                QPushButton#backwardButton {border : none;}
+                QPushButton#backwardButton {border : none;
+                                            icon  :url(images/sys_images/backward_icon.png)}
                 
-                QPushButton#backwardButton:hover:enabled {background-color : rgb(50, 50, 50);
-                                                        border-radius : 20px;}
+                QPushButton#backwardButton:hover:enabled {
+                                                        border-radius : 20px;
+                                                        icon : url(images/sys_images/backward_hover_icon.png)}
                 
-                QPushButton#forwardButton {border : none;}
+                QPushButton#forwardButton {border : none;
+                                            icon  :url(images/sys_images/forward_icon.png)}
                 
-                QPushButton#forwardButton:hover:enabled {background-color : rgb(50, 50, 50);
-                                                        border-radius : 20px;}
+                QPushButton#forwardButton:hover:enabled {
+                                                        border-radius : 20px;
+                                                        icon : url(images/sys_images/forward_hover_icon.png)}
                                                         
                 QPushButton#refreshButton {background : none;
                                         border : none;
@@ -251,12 +265,24 @@ dark_style_sheet = """
                                                 color : white}
                                                 
                 QPushButton#toolBarHideButton {background : none;
+                                                icon  :url(images/sys_images/up_arrow.png);
                                                 border : none;
                                                 font-size : 17px;
                                                 color : white;}
                                                 
-                QPushButton#toolBarHideButton:hover {color : blue} 
-                
+                QPushButton#toolBarHideButton:hover {color : blue;
+                                                    icon  :url(images/sys_images/up_arrow_hover.png);}  
+                                                    
+                QPushButton#toolBarShowButton {background : none;
+                                                icon  :url(images/sys_images/down_arrow.png);
+                                                border : none;
+                                                font-size : 17px;
+                                                color : white;}   
+                                                
+                QPushButton#toolBarShowButton:hover {color : blue;
+                                                    icon  :url(images/sys_images/down_arrow_hover.png);} 
+
+                                
                 QComboBox#sortingComboBox:pane {border-radius : 5px;}
                 
                 QMessageBox {min-width : 250px;}
@@ -310,22 +336,24 @@ dark_style_sheet = """
                                                     font-size : 18px;
                                                     text-align : top;
                                                     }
-                QPushButton#collectionToolBarButton:hover {background-color : rgb(40, 40, 40);
-                                                                                                        }
+                QPushButton#collectionToolBarButton:hover {background-color : rgb(40, 40, 40);}
                                                                                                         
-                QPushButton#stackChangeButton {background : none;
+                QPushButton#stackChangeButton {icon : url(images/sys_images/right_arrow.png);
                                                 border : none;
                                                 font-size : 18px;
                                                 max-width : 30px;}
+                                                
+                QPushButton#stackChangeButton:hover {icon : url(images/sys_images/right_arrow_hover.png);}
                 
                 QPushButton#stackChangeButton:hover {color : blue;}
                 
                 QPushButton#homeButton {background : none;
+                                        icon : url(images/sys_images/homeIcon.png);
                                         border : none;
                                         font-size : 18px;
                                         padding : 5px;
                                         }
-                QPushButton#homeButton:hover {background-color : rgb(50, 50, 70);}
+                QPushButton#homeButton:hover {icon : url(images/sys_images/homeIconHover.png);}
                 
                 QPushButton#navigateButton {background : none;
                                             color : white;
@@ -343,8 +371,7 @@ dark_style_sheet = """
                 QPushButton#barHideButton {background : none;
                                             padding : 5px;
                                             border : none;}
-                                                    
-                                    
+                                              
                 
                 """
 
@@ -395,20 +422,29 @@ dark_style_sheet_for_widgets = """
                                                             
                                 QDialog QLabel {font-size : 15px;}
                                 
-                                QDialog > QPushButton {background : none;
+                                QDialog  QPushButton {background : none;
                                                             border : 1px solid rgb(100,100, 100);
                                                             border-radius : 2px;
                                                             padding : 3px;
                                                             color : white;
                                                             font-size : 15px;}
                                                             
-                                QDialog > QPushButton:hover {background-color : rgb(240, 60, 6);
+                                QDialog  QPushButton:hover {background-color : rgb(240, 60, 6);
                                                             color : black;}
                                       
                                 QCheckBox {font-size : 15px;}
-                                QCheckBox::indicator:!checked {background-image : url(images/sys_images/unchecked_box.png);}
                                 
-                                QCheckBox::indicator:checked {background-image : url(images/sys_images/check_box.png)}                      
+                                QCheckBox::indicator:checked {background-image : url(images/sys_images/check_box2.png);
+                                                            width : 25px;
+                                                            height : 25px;
+                                                            background-position : center center;
+                                                            icon-size : 10px 10px;}  
+                                
+                                QCheckBox::indicator:!checked {background-image : url(images/sys_images/unchecked_box.png);
+                                                                width: 25px;
+                                                                height : 25px;}
+                                
+                                                    
                                 
                                 """
 
@@ -497,7 +533,7 @@ dark_style_sheet_for_Collection = """
                                                             border-bottom-left-radius : 0px;
                                                             color : white}
                                                             
-                                    QWidget#bookBaseWidget:hover {background: QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(150, 0, 120), stop : 0.5 rgb(70, 0, 50) ,stop : 1 rgb(180, 0, 150)); }
+                                    QWidget#bookBaseWidget:hover {background: QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(100, 0, 0), stop : 0.5 rgb(100, 0, 120) ,stop : 1 rgb(20, 0, 180)); }
                                                             
                                     QLabel#bookTitleLabel {background : none;
                                                             font-family : verdana;
@@ -638,7 +674,7 @@ style_sheet_dark_for_book = """
                                                     
                                                         }        
                             
-                            QLabel#pageTitleLabel {color  :rgb(0, 0, 200);
+                            QLabel#pageTitleLabel {color  :rgb(0, 200, 250);
                                                     border: none;
                                                     background-color : rgb(40, 40, 40);
                                                     padding : 5px;}
@@ -681,9 +717,11 @@ style_sheet_dark_for_book = """
                                                         background-color : rgb(50, 50, 50)
                                                         }
                                                         
-                            QWidget#bookStatusWidget {background-color : rgb(30, 30, 30);
+                            QWidget#bookStatusWidget {background-color : rgb(40, 40, 200);
                                                         border-right : 1px solid black;
                                                         border-left : 1px solid black}
+                                                        
+                            QWidget#pageStatusWidget {background-color  : rgb(30, 30, 30)}
                             
                             QLabel#statusTitleLabel {background : rgb(50, 50, 50);
                                                     border : none;
@@ -693,10 +731,16 @@ style_sheet_dark_for_book = """
                                                     padding : 12px;
                                                     }
                                                     
-                            QWidget#pageBase {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 250), stop : 1 rgb(0, 0, 100));;
-                                            margin : 10px;
-                                            border-radius : 10px;
+                            QLabel#pdfLabel {background : none;
+                                            font-size : 25px;
+                                            color : blue;}
+                                                    
+                            QWidget#pageBase {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 25), stop : 1 rgb(0, 0, 150));;
+                                            margin : 0px;
+                                            border-radius : 0px;
                                             border : none;
+                                            border : 4px solid rgb(100, 0, 200);
+                                            border-left : 4px solid rgb(100, 0, 200);
                                             padding : 20px;}
                                                     
                             QLabel {color : white}
@@ -713,8 +757,9 @@ style_sheet_dark_for_book = """
                                                     padding : 5px;}
                             
                             QLabel#pageDateTimeLabel {border : none;
-                                                        color : rgb(200, 200, 200);
+                                                        color : rgb(250, 250, 250);
                                                         background : none;
+                                                        font-size : 14px;
                                                         padding : 10px;}
                                                         
                             QLabel#keyLabel {border : none;
@@ -741,7 +786,7 @@ style_sheet_dark_for_book = """
                                                             
                             QPushButton#bookmarkAddButton:hover {background-color : rgb(0, 0, 200)}
                             
-                            QLabel#bookmarkTitleLabel {background-color : rgb(25, 25, 25);
+                            QLabel#bookmarkTitleLabel {background-color : rgb(0, 5, 55);
                                                         padding : 3px;}
                                                         
                             QLabel#bookmarkIndexLabel {background-color : blue;
@@ -750,12 +795,14 @@ style_sheet_dark_for_book = """
                                                     max-width : 60px;
                                                     border : none}
                                                     
-                            QLabel#bookmarkPageLabel {background-color : black;
+                            QPushButton#bookmarkPageLabel {background-color : black;
                                                     color  : white;
                                                     border : none;
                                                     border-bottom : 1px solid blue;
                                                     padding : 5px;
                                                     min-width : 50px;}
+                                                    
+                            QPushButton#bookmarkPageLabel:hover {background-color : rgb(0, 0, 40);}
                                                     
                             QLabel#bookmarkCommentLabel {background-color : rgb(0, 50, 200);
                                                         border : none;
@@ -770,8 +817,43 @@ style_sheet_dark_for_book = """
                                                     border-bottom : 1px solid blue;
                                                     padding : 5px;}
                                                     
-                            QWidget#bookCommentWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 50), stop : 1 rgb(0, 0, 200));}
-
+                            QWidget#bookCommentWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 1, stop : 0 rgb(0, 0, 10), stop : 1 rgb(0, 0, 100));}
+                            
+                            QDialog {font-size : 16px;
+                                    color : white;}
+                            
+                            QDialog QLabel {color : rgb(200, 200, 200);
+                                            font-size : 16px;}
+                                            
+                            QDialog QPushButton {background-color : blue;
+                                                padding : 10px;
+                                                font-size : 16px;
+                                                color : white;
+                                                border : none;
+                                                width : 60px;
+                                                height : 30px;
+                                                border-radius : 5px;}
+                                                
+                            QDialog QPushButton:hover {border : 3px solid blue;
+                                                        background-color : rgb(0, 0, 200);}
+                                                        
+                            QDialog QLineEdit {color : white;
+                                                background-color : rgb(50, 50, 50);
+                                                padding : 5px;
+                                                font-size : 17px;
+                                                selection-color : white;}
+                                                
+                            QDialog QSpinBox {color : white;
+                                        font-size : 17px;}
+                                                
+                            QDialog QTextEdit {font-size : 16px;
+                                            background-color  :rgb(50, 50, 50);
+                                            color : white;}
+                                            
+                            QInputDialog QLineEdit {background-color : rgb(50, 50, 50);
+                                                margin : 10px;}
+                                                
+                            QInputDialog QTextBrowser {background-color  :rgb(50, 50, 50)}                            
 """
 
 dark_theme_for_table = """
@@ -806,7 +888,12 @@ dark_theme_for_pathWidget = """
                             """
 
 dark_theme_for_task = """
-
+                
+                QLabel#imageLabel {background-image : url(images/sys_images/taskProfile.jpg);
+                                background-position : center center;
+                                font-size : 40px;
+                                font-weight : bold;}
+                
                 QLabel#reminderLabel {color : rgb(200, 200, 200);
                                     font-family : Hack;
                                     font-size : 20px;}
@@ -821,6 +908,10 @@ dark_theme_for_task = """
                                 border : none;
                                 padding : 10px;}
                                 
+                                
+                QRadioButton::indicator:!checked {background-image : url(images/sys_images/unchecked_box.png);}
+                QRAdioButton::indicator:checked {background-image : url(images/sys_images/check_box2.png);}
+                
                 QRadioButton#radioButton {color : rgb(200, 200, 200);
                                             background : none;
                                             margin : 10px;
@@ -837,18 +928,18 @@ dark_theme_for_task = """
                 QPushButton#navButton {border : none;
                                         background-color : rgb(0, 0, 150);
                                         font-size : 17px;
-                                        border : 2px solid blue;
                                         
                                         }
                                         
                 QPushButton#navButton:hover {background-color  :rgb(0, 0, 200);}
                                         
-                QPushButton#openButton {background-color : blue;
+                QPushButton#openButton {background-color : rgb(50, 0, 100);
+                                        background-image : url(images/sys_images/close.png);
                                         font-size : 17px;
-                                        color : white;
-                                        border : 2px solid rgb(0, 0, 150);}
+                                        color : white;}
                                         
-                QPushButton#openButton:hover {border : 1px solid rgb(0, 0, 100);}
+                QPushButton#openButton:hover {border : 1px solid rgb(100, 0, 100);
+                                                background-color : rgb(150, 0, 200)}
                                         
                 QWidget#taskWidget {background-color : rgb(40, 40, 40);
                                         margin : 0px;}

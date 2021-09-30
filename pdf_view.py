@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QStatusBar,  QWidget ,QAction,QToolBar,QDesktopWidg
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QPalette,QColor
+from PyQt5.QtGui import QPalette, QColor, QIcon
 from book_space_widgets import BookHistoryWidget, CommentLabel
 
 
@@ -37,11 +37,12 @@ class PDFViewer(QMainWindow):
         # create the new toll bar for main window
         self.toolBar = QToolBar()
         self.toolBar.setWindowTitle("PDf Viewer Tool Bar")
-        self.setIconSize(QSize(30, 30))
+        self.setIconSize(QSize(50, 50))
         self.addToolBar(self.toolBar)
 
         # create the actions for this
         exitAction = QAction("Exit", self)
+        exitAction.setIcon(QIcon("images/sys_images/close.png"))
         exitAction.triggered.connect(self.close)
 
 
@@ -82,6 +83,8 @@ class PDFViewer(QMainWindow):
             self.loading_label.setVisible(False)
 
             self.webView.loadProgress.connect(self.updateLoading)
+
+        self.webView.setZoomFactor(50)
 
     def updateLoading(self, value : int):
 

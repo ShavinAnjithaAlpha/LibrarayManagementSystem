@@ -6,9 +6,11 @@ import shutil
 import sys, random, threading
 
 import fitz
-from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow , QPushButton, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QGridLayout, QRadioButton,
-                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog ,QListView, QMenuBar, QMenu,
-                             QAction, QMessageBox, QStackedLayout, QDesktopWidget, QSplitter)
+from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow, QPushButton, QLabel, QLineEdit, QHBoxLayout,
+                             QVBoxLayout, QGridLayout, QRadioButton,
+                             QGroupBox, QScrollArea, QDialog, QFileDialog, QTabWidget, QComboBox, QInputDialog,
+                             QListView, QMenuBar, QMenu,
+                             QAction, QMessageBox, QStackedLayout, QDesktopWidget, QSplitter, QStatusBar, QProgressBar)
 
 from PyQt5.Qt import QFont, Qt, QSize, QTime, QDate, QPropertyAnimation, QEasingCurve, QModelIndex, QTextEdit, QRect, QThread
 import PyQt5.QtCore as Core
@@ -89,17 +91,25 @@ class LibNms:
     DELETE = 7
 
 class bookCoverLoader(QThread):
-    def __init__(self, bookList : list = [] ):
+    def __init__(self, bookList : list, statusBar : QStatusBar ):
         super(bookCoverLoader, self).__init__()
         self.bookWidgetList = bookList
+        self.statusBar = statusBar
 
     def run(self) -> None:
 
+        # progress_bar = QProgressBar()
+        # progress_bar.setMaximum(100)
+        total = len(self.bookWidgetList)
         # load the indivigual images of the each books
-        for bookWidget in self.bookWidgetList:
+        for i, bookWidget in enumerate(self.bookWidgetList):
             bookWidget.loadCover()
 
-        print("[INFO] cover load successfull...")
+            # self.statusBar.addWidget(progress_bar)
+
+        # remove the progress bar
+        # self.statusBar.removeWidget(progress_bar)
+
 
 
 class Stage:
@@ -258,6 +268,10 @@ class LibraryMangementSystem(QMainWindow):
         self.setUpWidgets()
         self.setStyleSheet(dark_style_sheet)
 
+        # create the status Bar
+        self.statusBar = QStatusBar()
+        self.setStatusBar(self.statusBar)
+
 
         # show the window in the screen
         self.show()
@@ -329,10 +343,22 @@ class LibraryMangementSystem(QMainWindow):
         spaceWidget.setObjectName("spaceWidget")
         spaceWidget.setContentsMargins(0, 0, 0, 0)
 
+        # create the another root collection title widget
+        self.rootCollectionTitleWidget = QWidget()
+        self.rootCollectionTitleWidget.setMinimumHeight(200)
+        self.rootCollectionTitleWidget.setMaximumHeight(200)
+        self.rootCollectionTitleWidget.hide()
+        self.rootCollectionTitleWidget.setObjectName("rootCollectionTitleWidget")
+
+        self.rootCollectionWidgetGrid = QGridLayout()
+        self.rootCollectionTitleWidget.setLayout(self.rootCollectionWidgetGrid)
+        self.rootCollectionTitleWidget.setContentsMargins(0, 0, 0, 0)
+
         # create the vbox for pack this widgets
         vbox1 = QVBoxLayout()
         vbox1.setSpacing(0)
         vbox1.setContentsMargins(0, 0, 0, 0)
+        vbox1.addWidget(self.rootCollectionTitleWidget)
         vbox1.addWidget(self.titleBaridget)
         vbox1.addLayout(self.toolStackLyt)
         vbox1.addWidget(spaceWidget, 10)
@@ -413,8 +439,15 @@ class LibraryMangementSystem(QMainWindow):
         self.openBookTableAction = QAction("Open Book Store as TableView", self)
         self.openBookTableAction.triggered.connect(self.openTableView)
 
+        self.bookViewACtion = QAction("Book View By there CoverImage", self)
+        self.bookViewACtion.triggered.connect(self.viewBookCoverImages)
+        self.bookViewACtion.setCheckable(True)
+        self.bookViewACtion.setChecked(False)
+
         self.view_menu.addAction(self.viewFavoriteAction)
         self.view_menu.addAction(self.openBookTableAction)
+        self.view_menu.addSeparator()
+        self.view_menu.addAction(self.bookViewACtion)
 
     def resetSystem(self):
 
@@ -558,12 +591,12 @@ class LibraryMangementSystem(QMainWindow):
 
         # create the hide and show animation object
         self.barAniamtion = QPropertyAnimation(self.barWidget, b'maximumWidth')
-        self.barAniamtion.setStartValue(self.barWidget.maximumWidth())
+        self.barAniamtion.setStartValue(self.barWidget.width())
         self.barAniamtion.setCurrentTime(800)
 
         if (self.navWidget.isHidden()):
             self.barAniamtion.setEndValue(int(self.width * 0.50))
-            self.barAniamtion.setEasingCurve(QEasingCurve.OutCurve)
+            self.barAniamtion.setEasingCurve(QEasingCurve.OutBounce)
             # start the animation
             self.barAniamtion.start(QPropertyAnimation.DeleteWhenStopped)
             # show the widgets
@@ -748,7 +781,7 @@ class LibraryMangementSystem(QMainWindow):
         renameButton.pressed.connect(lambda e = LibNms.RENAME : self.perfomeCollAction(e))
 
         changeDesButton = QPushButton("Change Description")
-        changeDesButton.setIcon(QIcon("images/sys_images/changeDesIocn.png"))
+        changeDesButton.setIcon(QIcon("images/sys_images/changeDesIcon.png"))
         changeDesButton.pressed.connect(lambda e  = LibNms.CHNDES : self.perfomeCollAction(e))
 
         changePwButton = QPushButton("Change Password")
@@ -777,7 +810,9 @@ class LibraryMangementSystem(QMainWindow):
             hbox.addWidget(button)
 
         # create the stack Change Button
-        stackChangeButton = QPushButton(">")
+        stackChangeButton = QPushButton()
+        # stackChangeButton.setIcon(QIcon("images/sys_images/right_arrow.png"))
+        stackChangeButton.setIconSize(QSize(35, 35))
         stackChangeButton.setObjectName("stackChangeButton")
         stackChangeButton.pressed.connect(lambda : self.toolStackLyt.setCurrentIndex(0))
         hbox.addWidget(stackChangeButton)
@@ -805,7 +840,7 @@ class LibraryMangementSystem(QMainWindow):
         self.searchBar.setObjectName("searchBar")
         self.searchBar.setMinimumSize(QSize(450, 40))
         # self.searchBar.setMaximumSize(QSize(500, 60))
-        self.searchBar.setPlaceholderText("search anything")
+        self.searchBar.setPlaceholderText("Search Anything     double clicked for Advanced Searching")
         self.searchBar.setAlignment(Qt.AlignRight)
         self.searchBar.textChanged.connect(self.searchThings)
         self.searchBar.mouseDoubleClickEvent = self.advancedSearchPopUp
@@ -867,7 +902,7 @@ class LibraryMangementSystem(QMainWindow):
         self.toolBarShowButton.setIcon(QIcon("images/sys_images/down_arraow.png"))
         self.toolBarShowButton.pressed.connect(self.showToolBar)
         self.toolBarShowButton.hide()
-        self.toolBarShowButton.setObjectName("toolBarHideButton")
+        self.toolBarShowButton.setObjectName("toolBarShowButton")
 
         # create the theme box
         self.themeBox = switchButton("list theme" , "box theme", "list", "box")
@@ -930,7 +965,9 @@ class LibraryMangementSystem(QMainWindow):
         grid_lyt.addLayout(buttonHBox, 1, 0, 1, 2)
 
         # create the stack lyt change button
-        stackChangeButton = QPushButton(">")
+        stackChangeButton = QPushButton()
+        # stackChangeButton.setIcon(QIcon("images/sys_images/right_arrow.png"))
+        stackChangeButton.setIconSize(QSize(35, 35))
         stackChangeButton.setObjectName("stackChangeButton")
         stackChangeButton.pressed.connect(lambda : self.toolStackLyt.setCurrentIndex(1))
         grid_lyt.addWidget(stackChangeButton, 0, 5)
@@ -962,6 +999,9 @@ class LibraryMangementSystem(QMainWindow):
 
         self.titleBaridget.hide()
 
+        # show the topCollectiono widget
+        self.rootCollectionTitleWidget.show()
+
         for widget in [*self.toolBarItems, *self.collectionToolBarButton, self.pathWidget]:
             widget.hide()
 
@@ -977,6 +1017,9 @@ class LibraryMangementSystem(QMainWindow):
 
         self.toolBarHideButton.show()
         self.toolBarShowButton.hide()
+
+        # hide the top Collection widget
+        self.rootCollectionTitleWidget.hide()
 
         self.titleBaridget.show()
 
@@ -1268,6 +1311,8 @@ class LibraryMangementSystem(QMainWindow):
         if text == "collection":
             # create the new collection dialog box
             dialogNew = newCollectionDialog(self)
+            dialogNew.setObjectName("newCollectionDialog")
+
             if dialogNew.exec_():
                 # get the information from the dialog
                 data = dialogNew.info_dict
@@ -1446,6 +1491,8 @@ class LibraryMangementSystem(QMainWindow):
             self.rootCollectionBox = rootCollectionWidget(id)
             self.status_vbox.insertWidget(1, self.rootCollectionBox)
 
+            self.setRootCollectionTitleWidget(id)
+
             # disabled the collection tool bar actions
             for widget in self.collectionToolBarButton:
                 widget.setDisabled(True)
@@ -1453,12 +1500,7 @@ class LibraryMangementSystem(QMainWindow):
             # set the path widget UI
             self.pathWidget.update(newPath)
 
-            # create the thread and run the thread
-            self.bookCoverLoadThread = bookCoverLoader(self.currentStage.bookWidgets)
-            # start the book widget loader
-            self.bookCoverLoadThread.start()
-            if (self.bookCoverLoadThread.isFinished()):
-                self.bookCoverLoadThread.deleteLater()
+            self.viewBookCoverImages()
 
     def sortWidgets(self):
 
@@ -1503,12 +1545,7 @@ class LibraryMangementSystem(QMainWindow):
         self.renderNewPageForCollection(self.currentPath)
         self.renderNewPageForBook(self.currentPath)
 
-        # create the thread and run the thread
-        self.bookCoverLoadThread = bookCoverLoader(self.currentStage.bookWidgets)
-        # start the book widget loader
-        self.bookCoverLoadThread.start()
-        if (self.bookCoverLoadThread.isFinished()):
-            self.bookCoverLoadThread.deleteLater()
+        self.viewBookCoverImages()
 
     def gotoHome(self):
 
@@ -1653,6 +1690,15 @@ class LibraryMangementSystem(QMainWindow):
             widget.mousePressEvent = lambda e , a = widget : self.setSelectionWidget(a)
 
 
+    def viewBookCoverImages(self, check = False):
+
+        if self.bookViewACtion.isChecked():
+            # create the thread and run the thread
+            self.bookCoverLoadThread = bookCoverLoader(self.currentStage.bookWidgets, self.statusBar)
+            # start the book widget loader
+            self.bookCoverLoadThread.start()
+            if (self.bookCoverLoadThread.isFinished()):
+                self.bookCoverLoadThread.deleteLater()
 
 
     def addCollectionWidgets(self, FilterData : list):
@@ -1807,6 +1853,49 @@ class LibraryMangementSystem(QMainWindow):
 
             self.status_vbox.insertWidget(0, self.statusBox)
 
+    def setRootCollectionTitleWidget(self, id : str):
+
+        # get the title , image and des
+        with open("db/collection.json")  as file:
+            data = json.load(file)
+
+            title = data.get(id).get("title")
+            des = data.get(id).get("description")
+            image = data.get(id).get("image_dir")
+
+        # set the data
+        try:
+            self.topCollectionImageLabel.setPixmap(QPixmap(image))
+            self.topCollectionTitleLabel.setText(title)
+            if des != "":
+                self.topColectionDesLabel.setText(des)
+            else:
+                self.topColectionDesLabel.setText("No Description Yet")
+
+        except:
+            # create the new widget
+            self.topCollectionImageLabel = QLabel()
+            self.topCollectionImageLabel.setFixedSize(QSize(450, self.rootCollectionTitleWidget.height()))
+            self.topCollectionImageLabel.setPixmap(QPixmap(image).scaled(
+                self.topCollectionImageLabel.size() , Qt.KeepAspectRatioByExpanding, Qt.FastTransformation
+            ))
+
+
+            self.topCollectionTitleLabel = QLabel(title)
+            self.topCollectionTitleLabel.setFont(QFont("Hack", 35))
+
+            if des != "":
+                self.topColectionDesLabel = QLabel(des)
+            else:
+                self.topColectionDesLabel = QLabel("No Description Yet")
+            self.topColectionDesLabel.setFont(QFont('Hack', 13))
+            self.topColectionDesLabel.setWordWrap(True)
+            self.topColectionDesLabel.setAlignment(Qt.AlignCenter)
+
+            self.rootCollectionWidgetGrid.addWidget(self.topCollectionImageLabel, 0, 0, 2, 1)
+            self.rootCollectionWidgetGrid.addWidget(self.topCollectionTitleLabel, 0, 1)
+            self.rootCollectionWidgetGrid.addWidget(self.topColectionDesLabel, 1, 1)
+
     def openBookSpace(self, book_id : str, pw  : str = ""):
 
         check = False
@@ -1862,39 +1951,74 @@ class LibraryMangementSystem(QMainWindow):
         connect = sqlite3.connect(self.db_file)
         cursor = connect.cursor()
 
-        cursor.execute("SELECT * FROM collection_table")
-        data = cursor.fetchall()
-        connect.close()
+        if not text.startswith("book::"):
+            cursor.execute("SELECT * FROM collection_table")
+            data = cursor.fetchall()
+            connect.close()
 
-        new_data = []
-        for coll in data:
-            if text.lower() in coll[3].lower():
-                new_data.append(coll)
+            new_data = []
+            for coll in data:
+                if text.lower() in coll[3].lower():
+                    new_data.append(coll)
 
-        del data
+            del data
 
-        # reshape the data
-        coll_data = {}
-        with open("db/collection.json", "r") as file:
-            coll_data = json.load(file)
+            # reshape the data
+            coll_data = {}
+            with open("db/collection.json", "r") as file:
+                coll_data = json.load(file)
 
-        # generate the new dict for this
-        shaped_data = []
-        for i in new_data:
-            new_dict = {"title": i[3],
-                            "description": coll_data.get(i[1])["description"],
-                            "path": i[2],
-                            "image_dir": coll_data.get(i[1])["image_dir"],
-                            "date": i[4],
-                            "time": i[5],
-                            "id": i[1],
-                            "pw": i[6]}
-            shaped_data.append(new_dict)
-        del coll_data
+            # generate the new dict for this
+            shaped_data = []
+            for i in new_data:
+                new_dict = {"title": i[3],
+                                "description": coll_data.get(i[1])["description"],
+                                "path": i[2],
+                                "image_dir": coll_data.get(i[1])["image_dir"],
+                                "date": i[4],
+                                "time": i[5],
+                                "id": i[1],
+                                "pw": i[6]}
+                shaped_data.append(new_dict)
+            del coll_data
 
-        self.renderAdvancedSearchWidgets(shaped_data)
+            self.renderAdvancedSearchCollectionWidgets(shaped_data)
 
-    def renderAdvancedSearchWidgets(self, data):
+        else:
+
+            cursor.execute("SELECT * FROM book_table")
+            data = cursor.fetchall()
+            connect.close()
+
+            book_data = {}
+            with open("db/book.json") as file:
+                book_data = json.load(file)
+
+            # filter the items
+            filter_books = {}
+            for book in book_data.keys():
+                if os.path.split(book_data[book].get("dir"))[1].startswith(text.split("::")[1]):
+                    filter_books[book] = book_data[book].get("dir")
+            del book_data
+
+            new_data = []
+            for book in data:
+                if book[1] in filter_books.keys():
+                    new_data.append({
+                        "title" : os.path.split(filter_books[book[1]])[1],
+                        "dir" : filter_books[book[1]],
+                        "path" : book[2],
+                        "id" : book[1],
+                        "pw" : book[-1]
+                    })
+            del data
+
+            # render the widgets
+            self.renderAdvancedSearchBookWidgets(new_data)
+
+
+
+    def renderAdvancedSearchCollectionWidgets(self, data):
 
         for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
             try:
@@ -1905,6 +2029,19 @@ class LibraryMangementSystem(QMainWindow):
         self.currentStage.addPath(self.currentPath)
         # pass to the add collection widget method
         self.addCollectionWidgets(data)
+        self.setBackForwardState()
+
+    def renderAdvancedSearchBookWidgets(self, data):
+
+        for widget in [*self.currentStage.collectionWidgets , *self.currentStage.bookWidgets]:
+            try:
+                widget.deleteLater()
+            except:
+                pass
+
+        self.currentStage.addPath(self.currentPath)
+        # pass to the add collection widget method
+        self.addNewBookWidgets(data)
         self.setBackForwardState()
 
     def getNeedPaths(self, rootPath):
@@ -2117,6 +2254,7 @@ class LibraryMangementSystem(QMainWindow):
 if __name__ == '__main__':
     # create the application object
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("images/sys_images/app_icon.png"))
 
     app.setStyle('Fusion')
     palette = QPalette()

@@ -28,6 +28,10 @@ class collectionWidget(QWidget):
         self.collection_id = id
         self.pw = pw
 
+
+        self.setStatusTip(f"Collection : {title}")
+        self.setUpToolTip()
+
         # create the container base widget
         self.baseWidget = QWidget(self)
         self.baseWidget.setObjectName("collectionBaseWidget")
@@ -406,6 +410,42 @@ class collectionWidget(QWidget):
             # finally delete the widget
             self.deleteLater()
             print("[INFO] successfully delete the collection...")
+
+    def setUpToolTip(self):
+
+        # calculate the data
+        connect = sqlite3.connect(db_file)
+        cursor = connect.cursor()
+
+        cursor.execute(f"SELECT path FROM collection_table")
+        data = [item[0] for item in cursor.fetchall()]
+
+        cursor.execute(f"SELECT path FROM book_table")
+        book_data = [item[0] for item in cursor.fetchall()]
+
+        connect.close()
+
+        total1 = 0
+        total2 = 0
+        for i in data:
+            if i.startswith(self.path):
+                total2 += 1
+                if (len(i.split("/")) - len(i.split(self.path)) == 1):
+                    total1 += 1
+
+        total3 = 0
+        total4 = 0
+        for i in book_data:
+            if i.startswith(self.path):
+                total4 += 1
+                if (len(i.split("/")) - len(i.split(self.path)) == 1):
+                    total3 += 1
+
+        self.setToolTip(f"""Collections : <font color = 'blue'>{total1}</font>
+                            \nTotal Collections : <font color = 'blue'> {total2}</font>
+                            \nBooks : <font color = 'blue' >{total3}</font>
+                            \nTotal Books : <font color = 'blue' >{total4}</font>""")
+
 
 class boxCollectionWidget(collectionWidget):
     def __init__(self, title, description, image_dir, path, pw ,id):

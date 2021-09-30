@@ -63,18 +63,18 @@ class taskWidget(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setObjectName("mainWidget")
         #self.setGeometry(QRect(self.parent.mapToGlobal(self.parent.rect().bottomLeft()), QSize(400, 800)))
-        self.setGeometry(300, 50, 550, 500)
+        self.setGeometry(QRect(self.parent.mapToParent(self.parent.rect().bottomLeft()), QSize(550, 500)))
         self.setMaximumHeight(600)
         #self.setFixedWidth(400)
         #self.setFixedHeight(800)
 
         # create the title labels
-        imageLabel = QLabel()
-        imageLabel.setFont(QFont('Hack', 22))
+        imageLabel = QLabel("Hi Shavin Anjitha")
+        imageLabel.setObjectName("imageLabel")
+        imageLabel.setFont(QFont('Hack', 35))
         imageLabel.setFixedSize(QSize(self.width(), 300))
-        imageLabel.setLayoutDirection(Qt.RightToLeft)
         imageLabel.setContentsMargins(0, 0, 0, 0)
-        imageLabel.setPixmap(QPixmap("images/sys_images/taskProfile.jpg").scaled(imageLabel.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        # imageLabel.setPixmap(QPixmap("images/sys_images/taskProfile.jpg").scaled(imageLabel.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         # create the two scroll area for task and reminders
         remindersScrollArea = QScrollArea()
